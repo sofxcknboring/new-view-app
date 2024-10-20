@@ -1,0 +1,64 @@
+[tool.poetry]
+name = "net-view-app"
+version = "0.1.0"
+description = ""
+authors = ["v.mishurenko <paranoiawe@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+asyncpg = "^0.30.0"
+python-dotenv = "^1.0.1"
+sqlalchemy = "^2.0.35"
+pysnmp = "^7.1.7"
+pysnmp-lextudio = "^6.2.1"
+pydantic = "^2.9.2"
+asyncio = "^3.4.3"
+fastapi = {extras = ["all"], version = "^0.115.2"}
+pydantic-settings = "^2.6.0"
+
+
+[tool.poetry.group.lint.dependencies]
+black = "^24.10.0"
+isort = "^5.13.2"
+mypy = "^1.11.2"
+flake8 = "^7.1.1"
+
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+
+[tool.mypy]
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_return_any = true
+check_untyped_defs = true
+exclude = 'venv'
+ignore_missing_imports = true
+
+
+[tool.black]
+line-length = 119
+exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | dist
+  )/
+  | foo.py
+)
+'''
+
+
+[tool.isort]
+line_length = 119
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
