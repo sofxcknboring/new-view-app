@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 class Base(DeclarativeBase):
     """
     Класс определяет общую структуру для всех моделей, наследующих его.
-    Attr:
+    Attributes:
         id (Mapped[int]): Уникальный идентификатор,
                           который является первичным ключом для
                           всех наследуемых моделей.
