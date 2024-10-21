@@ -41,7 +41,7 @@ class DataBaseConfig(BaseModel):
 
     url: PostgresDsn
     echo: bool = False
-    echo_bool: bool = False
+    echo_pool: bool = False
     pool_size: int = 50
     max_overflow: int = 10
 
@@ -73,10 +73,10 @@ class Setting(BaseSettings):
         api (ApiPrefix): Конфигурация префикса для API маршрутов.
         db (DataBaseConfig): Конфигурация для подключения к базе данных.
         snmp (SnmpConfig): Конфигурация для SNMP подключения.
-        api_key (str): API ключ для авторизации в сторонних сервисах.
+        api_key (str): API ключ для авторизации.
     """
     model_config = SettingsConfigDict(
-        env_file="../.env",
+        env_file=".env",
         case_sensitive=False,
         env_nested_delimiter="__",
         env_prefix="APP_CONFIG__",

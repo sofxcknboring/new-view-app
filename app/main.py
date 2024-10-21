@@ -5,14 +5,23 @@ import uvicorn
 from core.config import settings
 from fastapi import FastAPI
 
-from core.models.db_helper import db_helper
+from core.models import db_helper
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # start up
+    """
+    Асинхронный контекстный менеджер для управления жизненным циклом приложения FastAPI.
+    Функция выполняет логику на этапе старта и завершения работы приложения.
+    Args:
+        app (FastAPI): Экземпляр приложения FastAPI.
+
+    Yields:
+        None: Возвращает управление приложению между этапами запуска и завершения.
+    """
+    # start up logic
     yield
-    # shutdown
+    # shutdown logic
     await db_helper.dispose()
 
 
