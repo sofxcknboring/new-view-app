@@ -1,27 +1,27 @@
 from collections.abc import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine, AsyncEngine
-
 from core.config import settings
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 
 class DataBaseHelper:
     """
-        Помощник для работы с базой данных на основе SQLAlchemy с асинхронными операциями.
+    Помощник для работы с базой данных на основе SQLAlchemy с асинхронными операциями.
 
-        Attr:
-            engine (AsyncEngine): Асинхронный движок SQLAlchemy для работы с базой данных.
-            session_factory (async_sessionmaker[AsyncSession]):
-            Фабрика сессий для управления подключениями к базе данных.
+    Attr:
+        engine (AsyncEngine): Асинхронный движок SQLAlchemy для работы с базой данных.
+        session_factory (async_sessionmaker[AsyncSession]):
+        Фабрика сессий для управления подключениями к базе данных.
 
-        Params:
-            url (str): URL для подключения к базе данных.
-            echo (bool): Логировать SQL-запросы (по умолчанию False).
-            echo_pool (bool): Включает или отключает вывод информации о пуле соединений (по умолчанию False).
-            pool_size (int): Размер пула подключений (по умолчанию 50).
-            max_overflow (int): Максимальное количество дополнительных подключений,
-            которые могут быть созданы при нагрузке (по умолчанию 10).
-        """
+    Params:
+        url (str): URL для подключения к базе данных.
+        echo (bool): Логировать SQL-запросы (по умолчанию False).
+        echo_pool (bool): Включает или отключает вывод информации о пуле соединений (по умолчанию False).
+        pool_size (int): Размер пула подключений (по умолчанию 50).
+        max_overflow (int): Максимальное количество дополнительных подключений,
+        которые могут быть созданы при нагрузке (по умолчанию 10).
+    """
+
     def __init__(
         self,
         url: str,
@@ -69,4 +69,3 @@ db_helper = DataBaseHelper(
     pool_size=settings.db.pool_size,
     max_overflow=settings.db.max_overflow,
 )
-
