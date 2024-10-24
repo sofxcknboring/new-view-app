@@ -16,8 +16,9 @@ class RunConfig(BaseModel):
 
 
 class ApiV1Prefix(BaseModel):
-    prefix: str = '/v1'
-    devices: str = '/devices'
+    prefix: str = "/v1"
+    core_switches: str = "/core_switches"
+
 
 class ApiPrefix(BaseModel):
     """
@@ -30,7 +31,6 @@ class ApiPrefix(BaseModel):
 
     prefix: str = "/api"
     v1: ApiV1Prefix = ApiV1Prefix()
-
 
 
 class DataBaseConfig(BaseModel):
@@ -64,6 +64,7 @@ class SnmpConfig(BaseModel):
         priv_key (str): Ключ для шифрования данных (privacy key).
         community (str): Сообщество для SNMP (если используется SNMPv2c).
     """
+
     port: str
     username: str
     auth_key: str
@@ -82,6 +83,7 @@ class Setting(BaseSettings):
         snmp (SnmpConfig): Конфигурация для SNMP подключения.
         api_key (str): API ключ для авторизации.
     """
+
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=False,

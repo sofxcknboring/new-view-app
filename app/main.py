@@ -3,9 +3,8 @@ from contextlib import asynccontextmanager
 import api
 import uvicorn
 from core.config import settings
-from fastapi import FastAPI
-
 from core.models import db_helper
+from fastapi import FastAPI
 
 
 @asynccontextmanager
