@@ -1,14 +1,19 @@
 from typing import Sequence
 
-from core.models import CoreSwitch
-from schemas.core_switch import CoreSwitchCreate, CoreSwitchUpdate, CoreSwitchRead
+from core.models import CoreSwitch, db_helper
+from fastapi import Depends
+from schemas.core_switch import CoreSwitchCreate, CoreSwitchUpdate
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from .crud_base import BaseCRUD
 
 
 class CrudCoreSwitch(BaseCRUD):
+    """
+    Crud класс для опорных коммутаторов.
+    """
 
     async def create(self, schema: CoreSwitchCreate) -> CoreSwitch:
         core_switch = CoreSwitch(**schema.model_dump())
@@ -48,3 +53,22 @@ class CrudCoreSwitch(BaseCRUD):
         await self.session.delete(core_switch)
         await self.session.commit()
         return True
+
+
+def get_crud_core_switch(session: AsyncSession = Depends(db_helper.session_getter)) -> CrudCoreSwitch:
+    """
+    Получает экземпляр класса CrudCoreSwitch с использованием асинхронной сессии базы данных.
+
+    Эта функция используется в качестве зависимости в маршрутах FastAPI для предоставления
+    экземпляра CrudCoreSwitch, который может быть использован для выполнения CRUD-операций
+    с объектами CoreSwitch.
+
+    Args:
+        session (AsyncSession, optional): Асинхронная сессия базы данных, полученная через
+            зависимость db_helper.session_getter. По умолчанию None.
+
+    Returns:
+        CrudCoreSwitch: Экземпляр класса CrudCoreSwitch, готовый к использованию для
+        выполнения операций с базой данных.
+    """
+    return CrudCoreSwitch(session=session)
