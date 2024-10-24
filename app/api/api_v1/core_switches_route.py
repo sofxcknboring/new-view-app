@@ -2,7 +2,7 @@ from typing import List
 
 from core.services.crud.crud_core_sw import CrudCoreSwitch, get_crud_core_switch
 from fastapi import APIRouter, Depends
-from schemas.core_switch import CoreSwitchCreate, CoreSwitchRead, CoreSwitchUpdate
+from schemas.core_switch import CoreSwitchCreate, CoreSwitchRead, CoreSwitchUpdate, CoreSwitchBase
 
 router = APIRouter(tags=["CoreSwitch"])
 
@@ -37,34 +37,31 @@ async def create_core_switch(
 
 
 @router.put("/", response_model=CoreSwitchRead)
-async def update_core_switch(
-    ip: str, core_switch_update: CoreSwitchUpdate, crud: CrudCoreSwitch = Depends(get_crud_core_switch)
+async def update_core_switch(core_switch_update: CoreSwitchUpdate, crud: CrudCoreSwitch = Depends(get_crud_core_switch)
 ) -> CoreSwitchRead:
     """
-    Обновить существующий CoreSwitch по IP-адресу.
-
     Args:
-        ip (str): IP-адрес обновляемого CoreSwitch.
         core_switch_update (CoreSwitchUpdate): Данные для обновления CoreSwitch.
         crud (CrudCoreSwitch): Зависимость для работы с CoreSwitch.
 
     Returns:
         CoreSwitchRead: Обновлённый объект CoreSwitch.
     """
-    updated_core_switch = await crud.update(core_switch_ip=ip, schema=core_switch_update)
+    updated_core_switch = await crud.update(schema=core_switch_update)
     return updated_core_switch
 
 
 @router.delete("/", response_model=bool)
-async def delete_core_switch(ip: str, crud: CrudCoreSwitch = Depends(get_crud_core_switch)) -> bool:
+async def delete_core_switch(
+        core_switch_base: CoreSwitchBase,
+        crud: CrudCoreSwitch = Depends(get_crud_core_switch)) -> bool:
     """
-    Удалить CoreSwitch по IP-адресу.
     Args:
-        ip (str): IP-адрес удаляемого CoreSwitch.
+        core_switch_base: имя опорного коммутатора.
         crud (CrudCoreSwitch): Зависимость для работы с CoreSwitch.
 
     Returns:
         bool: Успешность операции удаления (True, если удалено, False, если объект не найден).
     """
-    is_deleted_core_switch = await crud.delete(core_switch_ip=ip)
+    is_deleted_core_switch = await crud.delete(schema=core_switch_base)
     return is_deleted_core_switch

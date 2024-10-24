@@ -17,9 +17,9 @@ class BaseCRUD(ABC):
         pass
 
     @abstractmethod
-    async def update(self, param, schema):
+    async def update(self, schema):
         pass
 
     @abstractmethod
-    async def delete(self, param):
+    async def delete(self, schema):
         pass

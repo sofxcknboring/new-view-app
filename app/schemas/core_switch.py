@@ -22,14 +22,12 @@ class CoreSwitchCreate(CoreSwitchBase):
         return validation_helper.validate_ip_address(ip=value)
 
 
-class CoreSwitchUpdate(CoreSwitchBase):
+class CoreSwitchUpdate(CoreSwitchCreate):
     pass
 
 
-class CoreSwitchRead(CoreSwitchCreate):
-    model_config = ConfigDict(from_attributes=True)
+class CoreSwitchRead(CoreSwitchBase):
     id: int
     ip_address: str
-    name: Optional[str]
     snmp_oid: str
     switches: Optional[List[SwitchBase]] = []
