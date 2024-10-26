@@ -1,14 +1,17 @@
 from typing import List
 
-from core.services.crud.crud_core_sw import CrudCoreSwitch, get_crud_core_switch
+from core.services.crud.crud_core_sw import CrudCoreSwitch
+from core.services.crud.helpers import get_crud
 from fastapi import APIRouter, Depends
-from schemas.core_switch import CoreSwitchCreate, CoreSwitchRead, CoreSwitchUpdate, CoreSwitchBase
+from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchRead, CoreSwitchUpdate
 
 router = APIRouter(tags=["CoreSwitch"])
 
+dep_crud_core_switch = get_crud(CrudCoreSwitch)
+
 
 @router.get("/", response_model=list[CoreSwitchRead])
-async def get_core_switches(crud: CrudCoreSwitch = Depends(get_crud_core_switch)) -> List[CoreSwitchRead]:
+async def get_core_switches(crud: CrudCoreSwitch = Depends(dep_crud_core_switch)) -> List[CoreSwitchRead]:
     """
     Args:
         crud (CrudCoreSwitch): Зависимость, предоставляющая объект для работы с CoreSwitch.
@@ -22,7 +25,7 @@ async def get_core_switches(crud: CrudCoreSwitch = Depends(get_crud_core_switch)
 
 @router.post("/", response_model=CoreSwitchRead)
 async def create_core_switch(
-    core_switch_create: CoreSwitchCreate, crud: CrudCoreSwitch = Depends(get_crud_core_switch)
+    core_switch_create: CoreSwitchCreate, crud: CrudCoreSwitch = Depends(dep_crud_core_switch)
 ) -> CoreSwitchRead:
     """
     Args:
@@ -37,7 +40,8 @@ async def create_core_switch(
 
 
 @router.put("/", response_model=CoreSwitchRead)
-async def update_core_switch(core_switch_update: CoreSwitchUpdate, crud: CrudCoreSwitch = Depends(get_crud_core_switch)
+async def update_core_switch(
+    core_switch_update: CoreSwitchUpdate, crud: CrudCoreSwitch = Depends(dep_crud_core_switch)
 ) -> CoreSwitchRead:
     """
     Args:
@@ -53,8 +57,8 @@ async def update_core_switch(core_switch_update: CoreSwitchUpdate, crud: CrudCor
 
 @router.delete("/", response_model=bool)
 async def delete_core_switch(
-        core_switch_base: CoreSwitchBase,
-        crud: CrudCoreSwitch = Depends(get_crud_core_switch)) -> bool:
+    core_switch_base: CoreSwitchBase, crud: CrudCoreSwitch = Depends(dep_crud_core_switch)
+) -> bool:
     """
     Args:
         core_switch_base: имя опорного коммутатора.

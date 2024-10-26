@@ -18,6 +18,8 @@ class RunConfig(BaseModel):
 class ApiV1Prefix(BaseModel):
     prefix: str = "/v1"
     core_switches: str = "/core_switches"
+    switches: str = "/switches"
+    devices: str = "/devices"
 
 
 class ApiPrefix(BaseModel):

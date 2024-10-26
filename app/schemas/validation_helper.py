@@ -16,3 +16,6 @@ class ValidationHelper:
         if not re.match(pattern, mac):
             raise ValueError(f"ValueError - mac: {mac}")
         return mac
+
+
+validation_helper = ValidationHelper()

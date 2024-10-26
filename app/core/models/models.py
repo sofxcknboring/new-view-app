@@ -32,7 +32,7 @@ class Switch(Base):
     Attributes:
         ip_address (str): IP-адрес коммутатора.
         snmp_oid (str): Идентификатор SNMP-агента.
-        core_switch_id (int): Уникальный идентификатор опорного коммутатора, к которому принадлежит данный коммутатор.
+        core_switch_ip (str): IP опорного коммутатора, к которому принадлежит данный коммутатор.
         core_switch (CoreSwitch): Связанный опорный коммутатор, к которому принадлежит этот коммутатор.
         devices (List[Device]): Список устройств, подключенных к этому коммутатору.
         excluded_ports_relation (List[SwitchExcludedPort]): Список исключенных портов, связанных с данным коммутатором.
@@ -41,8 +41,9 @@ class Switch(Base):
     __tablename__ = "switches"
 
     ip_address: Mapped[str] = mapped_column(unique=True, index=True)
+    comment: Mapped[str] = mapped_column(nullable=True)
     snmp_oid: Mapped[str] = mapped_column(default="1.3.6.1.2.1.17.7.1.2.2.1.2")
-    core_switch_id: Mapped[int] = mapped_column(ForeignKey("core_switches.id"))
+    core_switch_ip: Mapped[str] = mapped_column(ForeignKey("core_switches.ip_address"))
     core_switch = relationship("CoreSwitch", back_populates="switches")
     devices: Mapped[List["Device"]] = relationship("Device", back_populates="switch")
     excluded_ports_relation: Mapped[List["SwitchExcludedPort"]] = relationship(
@@ -62,6 +63,7 @@ class ExcludedPort(Base):
     __tablename__ = "excluded_ports"
 
     port_number: Mapped[int] = mapped_column(unique=True)
+    comment: Mapped[str] = mapped_column(nullable=True)
 
     switches: Mapped[List["SwitchExcludedPort"]] = relationship("SwitchExcludedPort", back_populates="excluded_port")
 
