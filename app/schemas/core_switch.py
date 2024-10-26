@@ -1,11 +1,9 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, Field, field_validator
 from schemas.switch import SwitchBase
 
-from .validation_helper import ValidationHelper
-
-validation_helper = ValidationHelper()
+from .validation_helper import validation_helper
 
 
 class CoreSwitchBase(BaseModel):
