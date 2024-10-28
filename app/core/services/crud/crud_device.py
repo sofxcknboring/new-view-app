@@ -1,24 +1,21 @@
-from .crud_base import BaseCRUD
-from schemas.device import DeviceUpdate
-from core.models import Device
-
 from typing import Sequence
 
+from core.models import Device
+from schemas.device import DeviceUpdate
 from sqlalchemy import select
+
+from .crud_base import BaseCRUD
+
 
 class CrudDevice(BaseCRUD):
 
-
     async def create(self, schema):
         pass
-
 
     async def read(self, schema=None) -> Sequence[Device]:
         stmt = select(Device).order_by(Device.port)
         result = await self.session.scalars(stmt)
         return result.all()
-
-
 
     async def update(self, schema: DeviceUpdate):
         stmt = select(Device).where(Device.mac == schema.mac)
@@ -35,7 +32,5 @@ class CrudDevice(BaseCRUD):
         await self.session.refresh(device)
         return True
 
-
     async def delete(self, schema):
         pass
-

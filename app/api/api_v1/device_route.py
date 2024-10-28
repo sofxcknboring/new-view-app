@@ -30,5 +30,3 @@ async def update_device(device_update: DeviceUpdate, crud: CrudDevice = Depends(
     """
     is_updated_device = await crud.update(schema=device_update)
     return is_updated_device
-
-

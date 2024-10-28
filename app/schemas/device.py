@@ -15,6 +15,7 @@ class DeviceCreate(DeviceBase):
 class DeviceUpdate(DeviceBase):
     mac: str
 
+
 class DeviceRead(DeviceBase):
     id: int
     port: int
@@ -24,4 +25,3 @@ class DeviceRead(DeviceBase):
     status: bool
     update_time: datetime
     switch_id: int
-

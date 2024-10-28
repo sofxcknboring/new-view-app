@@ -2,8 +2,8 @@ from core.config import settings
 from fastapi import APIRouter
 
 from .core_switches_route import router as core_switch_router
-from .switch_route import router as switch_router
 from .device_route import router as device_router
+from .switch_route import router as switch_router
 
 router = APIRouter(
     prefix=settings.api.v1.prefix,

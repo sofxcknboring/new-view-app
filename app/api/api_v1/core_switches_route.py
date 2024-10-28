@@ -1,8 +1,8 @@
-from typing import List, Optional
+from typing import List
 
 from core.services.crud.crud_core_sw import CrudCoreSwitch
 from core.services.crud.helpers import get_crud
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchRead, CoreSwitchUpdate
 
 router = APIRouter(tags=["CoreSwitch"])
@@ -19,22 +19,6 @@ async def get_core_switches(crud: CrudCoreSwitch = Depends(dep_crud_core_switch)
     """
     core_switches = await crud.read()
     return core_switches
-
-# @router.get("/", response_model=list[dict])
-# async def get_core_switches(
-#         crud: CrudCoreSwitch = Depends(dep_crud_core_switch),
-#         fields: Optional[List[str]] = Query(None, description="Comma-separated list of fields to return")
-# ) -> List[dict]:
-#     core_switches = await crud.read()
-#
-#     if fields:
-#         field_set = set(fields)
-#         # Создаем новые словари с только указанными полями
-#         filtered_switches = [{field: getattr(switch, field) for field in field_set if hasattr(switch, field)} for switch
-#                              in core_switches]
-#         return filtered_switches
-#
-#     return core_switches
 
 
 @router.post("/", response_model=bool)

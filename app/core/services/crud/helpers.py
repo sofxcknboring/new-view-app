@@ -1,9 +1,9 @@
 from typing import Callable, Type, TypeVar
 
+from core.models import db_helper
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models import db_helper
 from .crud_base import BaseCRUD
 
 CRUDType = TypeVar("CRUDType", bound=BaseCRUD)
