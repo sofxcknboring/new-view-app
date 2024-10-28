@@ -1,6 +1,6 @@
 from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
+from urllib.parse import quote
 
 class RunConfig(BaseModel):
     """
@@ -11,8 +11,8 @@ class RunConfig(BaseModel):
         port (int): Порт, на котором приложение будет слушать запросы (по умолчанию 8000).
     """
 
-    host: str = "0.0.0.0"
-    port: int = 8000
+    host: str = "127.0.0.1"
+    port: int = 8080
 
 
 class ApiV1Prefix(BaseModel):
@@ -48,12 +48,19 @@ class DataBaseConfig(BaseModel):
         которые могут быть созданы при нагрузке (по умолчанию 10).
     """
 
-    url: PostgresDsn
+    user: str
+    password: str
+    host: str
+    port: int
+    database: str
     echo: bool = True
     echo_pool: bool = False
     pool_size: int = 50
     max_overflow: int = 10
 
+    @property
+    def url(self) -> PostgresDsn:
+        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
 
 class SnmpConfig(BaseModel):
     """
