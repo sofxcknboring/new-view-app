@@ -17,5 +17,11 @@ class ValidationHelper:
             raise ValueError(f"ValueError - mac: {mac}")
         return mac
 
+    @staticmethod
+    def validate_port(self, port: int) -> int:
+        if port > 9999:
+            raise ValueError(f"ValueError - port: {port}")
+        return port
+
 
 validation_helper = ValidationHelper()

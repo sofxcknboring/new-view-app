@@ -13,19 +13,19 @@ class CrudCoreSwitch(BaseCRUD):
     Crud класс для опорных коммутаторов.
     """
 
-    async def create(self, schema: CoreSwitchCreate) -> CoreSwitch:
+    async def create(self, schema: CoreSwitchCreate) -> bool:
         core_switch = CoreSwitch(**schema.model_dump())
         self.session.add(core_switch)
         await self.session.commit()
         await self.session.refresh(core_switch)
-        return core_switch
+        return True
 
     async def read(self, schema=None) -> Sequence[CoreSwitch]:
         stmt = select(CoreSwitch).options(selectinload(CoreSwitch.switches)).order_by(CoreSwitch.id)
         result = await self.session.scalars(stmt)
         return result.all()
 
-    async def update(self, schema: CoreSwitchUpdate) -> CoreSwitch:
+    async def update(self, schema: CoreSwitchUpdate) -> bool:
         stmt = select(CoreSwitch).where(CoreSwitch.ip_address == schema.ip_address)
         result = await self.session.execute(stmt)
         core_switch = result.scalar_one_or_none()
@@ -38,7 +38,7 @@ class CrudCoreSwitch(BaseCRUD):
 
         await self.session.commit()
         await self.session.refresh(core_switch)
-        return core_switch
+        return True
 
     async def delete(self, schema: CoreSwitchBase) -> bool:
         stmt = select(CoreSwitch).where(CoreSwitch.name == schema.name)

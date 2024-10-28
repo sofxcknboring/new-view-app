@@ -18,6 +18,7 @@ class CoreSwitch(Base):
 
     __tablename__ = "core_switches"
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     ip_address: Mapped[str] = mapped_column(unique=True, index=True)
     name: Mapped[str] = mapped_column(unique=True, index=True, nullable=True)
     snmp_oid: Mapped[str] = mapped_column(default="1.3.6.1.2.1.4.22.1.2")
@@ -40,14 +41,15 @@ class Switch(Base):
 
     __tablename__ = "switches"
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     ip_address: Mapped[str] = mapped_column(unique=True, index=True)
     comment: Mapped[str] = mapped_column(nullable=True)
     snmp_oid: Mapped[str] = mapped_column(default="1.3.6.1.2.1.17.7.1.2.2.1.2")
     core_switch_ip: Mapped[str] = mapped_column(ForeignKey("core_switches.ip_address"))
-    core_switch = relationship("CoreSwitch", back_populates="switches")
-    devices: Mapped[List["Device"]] = relationship("Device", back_populates="switch")
+    core_switch = relationship("CoreSwitch", back_populates="switches", lazy="selectin")
+    devices: Mapped[List["Device"]] = relationship("Device", back_populates="switch", lazy="selectin")
     excluded_ports_relation: Mapped[List["SwitchExcludedPort"]] = relationship(
-        "SwitchExcludedPort", back_populates="switch"
+        "SwitchExcludedPort", back_populates="switch", lazy="selectin"
     )
 
 
@@ -62,10 +64,13 @@ class ExcludedPort(Base):
 
     __tablename__ = "excluded_ports"
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     port_number: Mapped[int] = mapped_column(unique=True)
     comment: Mapped[str] = mapped_column(nullable=True)
 
-    switches: Mapped[List["SwitchExcludedPort"]] = relationship("SwitchExcludedPort", back_populates="excluded_port")
+    switches: Mapped[List["SwitchExcludedPort"]] = relationship(
+        "SwitchExcludedPort", back_populates="excluded_port", lazy="selectin"
+    )
 
 
 class SwitchExcludedPort(Base):
@@ -82,8 +87,8 @@ class SwitchExcludedPort(Base):
     switch_id: Mapped[int] = mapped_column(ForeignKey("switches.id"), primary_key=True)
     excluded_port_id: Mapped[int] = mapped_column(ForeignKey("excluded_ports.id"), primary_key=True)
 
-    switch: Mapped["Switch"] = relationship("Switch", back_populates="excluded_ports_relation")
-    excluded_port: Mapped["ExcludedPort"] = relationship("ExcludedPort", back_populates="switches")
+    switch: Mapped["Switch"] = relationship("Switch", back_populates="excluded_ports_relation", lazy="selectin")
+    excluded_port: Mapped["ExcludedPort"] = relationship("ExcludedPort", back_populates="switches", lazy="selectin")
 
 
 class Device(Base):
@@ -104,6 +109,7 @@ class Device(Base):
 
     __tablename__ = "devices"
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     workplace_number: Mapped[str] = mapped_column(unique=True, nullable=True)
     port: Mapped[int] = mapped_column()
     mac: Mapped[str] = mapped_column()
@@ -113,4 +119,4 @@ class Device(Base):
     update_time: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True))
 
     switch_id: Mapped[int] = mapped_column(ForeignKey("switches.id"))
-    switch: Mapped["Switch"] = relationship("Switch", back_populates="devices")
+    switch: Mapped["Switch"] = relationship("Switch", back_populates="devices", lazy="selectin")
