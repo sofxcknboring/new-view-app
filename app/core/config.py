@@ -2,6 +2,7 @@ from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from urllib.parse import quote
 
+
 class RunConfig(BaseModel):
     """
     Конфигурация для параметров запуска сервера.
@@ -61,6 +62,7 @@ class DataBaseConfig(BaseModel):
     @property
     def url(self) -> PostgresDsn:
         return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
+
 
 class SnmpConfig(BaseModel):
     """
