@@ -1,6 +1,5 @@
 from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from urllib.parse import quote
 
 
 class RunConfig(BaseModel):
