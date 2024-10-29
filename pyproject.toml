@@ -14,7 +14,7 @@ pysnmp = "^7.1.7"
 pysnmp-lextudio = "^6.2.1"
 pydantic = "^2.9.2"
 asyncio = "^3.4.3"
-fastapi = {extras = ["all"], version = "^0.115.2"}
+fastapi = {extras = ["all"], version = "^0.115.4"}
 pydantic-settings = "^2.6.0"
 alembic = "^1.13.3"
 
@@ -22,7 +22,7 @@ alembic = "^1.13.3"
 [tool.poetry.group.lint.dependencies]
 black = "^24.10.0"
 isort = "^5.13.2"
-mypy = "^1.11.2"
+mypy = "^1.13.0"
 flake8 = "^7.1.1"
 
 
