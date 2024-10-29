@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Sequence
 
+from core.models import CoreSwitch
 from core.services.crud.crud_core_sw import CrudCoreSwitch
 from core.services.crud.helpers import get_crud
 from fastapi import APIRouter, Depends
@@ -11,7 +12,7 @@ dep_crud_core_switch = get_crud(CrudCoreSwitch)
 
 
 @router.get("/", response_model=list[CoreSwitchRead])
-async def get_core_switches(crud: CrudCoreSwitch = Depends(dep_crud_core_switch)) -> List[CoreSwitchRead]:
+async def get_core_switches(crud: CrudCoreSwitch = Depends(dep_crud_core_switch)) -> Sequence[CoreSwitch]:
     """
     Returns:
         List[CoreSwitchRead]: Список объектов CoreSwitch -> Switch из базы данных.
