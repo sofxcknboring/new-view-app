@@ -1,13 +1,11 @@
-from typing import List, Tuple, Any, Dict
-
 import asyncio
 import re
-
-from core.services.snmp.snmp_base import SnmpBase, SnmpResultFormatter
-
-from pysnmp.hlapi.asyncio import *
+from typing import Any, Dict, List, Tuple
 
 from core.config import settings
+from core.services.snmp.snmp_base import SnmpBase, SnmpResultFormatter
+from pysnmp.hlapi.asyncio import *
+
 
 class SnmpV3(SnmpBase):
     """
@@ -102,9 +100,7 @@ class SnmpV3(SnmpBase):
                 result[target_ip].extend({f"{target_ip}": formatted_response.get_error_message()})
                 break
             else:
-                formatted_result, current_oid = formatted_response.get_vlan_mac_ip(
-                    target_ip=target_ip
-                )
+                formatted_result, current_oid = formatted_response.get_vlan_mac_ip(target_ip=target_ip)
 
                 result[target_ip].extend(formatted_result[target_ip])
 
@@ -145,4 +141,3 @@ class CoreSwitchFormatter(SnmpResultFormatter):
             }
             formatted_result[target_ip].append(var_bind_data)
         return formatted_result, current_oid
-

@@ -14,8 +14,8 @@ class SnmpResponseMerger:
         for switch_device in self.switch_data:
             for core_switch, core_devices in self.core_switch_data.items():
                 for device in core_devices:
-                    if switch_device['MAC'] == device['MAC']:
-                        switch_device['IP'] = device['IP']
+                    if switch_device["MAC"] == device["MAC"]:
+                        switch_device["IP"] = device["IP"]
                     else:
                         continue
 

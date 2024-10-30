@@ -1,12 +1,9 @@
-from typing import List, Optional, Tuple, Any, Dict
-
 import asyncio
-
-from core.services.snmp.snmp_base import SnmpBase, SnmpResultFormatter
-
-from pysnmp.hlapi.asyncio import *
+from typing import Any, Dict, List, Optional, Tuple
 
 from core.config import settings
+from core.services.snmp.snmp_base import SnmpBase, SnmpResultFormatter
+from pysnmp.hlapi.asyncio import *
 
 
 class SnmpV2(SnmpBase):
@@ -83,7 +80,6 @@ class SnmpV2(SnmpBase):
             combined_results.extend(result)
 
         return combined_results
-
 
     async def walk_switch_ports(self, target_ip) -> List[Dict[str, Any]]:
         """
