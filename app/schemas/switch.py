@@ -14,7 +14,9 @@ class SwitchCreate(SwitchBase):
     ip_address: Optional[str] = Field(None, description="IP-адрес коммутатора")
     snmp_oid: Optional[str] = Field("1.3.6.1.2.1.17.7.1.2.2.1.2", description="Идентификатор SNMP-агента")
     core_switch_ip: str = Field(None, description="IP-адрес опорного коммутатора")
-    excluded_ports_relation: Optional[List[int]] = Field(None, description="Excluded ports")
+    excluded_ports_relation: Optional[List[int]] = Field(
+        [23, 24, 25, 26, 27, 28, 29, 30, 105, 209, 1000], description="Excluded ports"
+    )
 
     @field_validator("ip_address", "core_switch_ip")
     @classmethod
