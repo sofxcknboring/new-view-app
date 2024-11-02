@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, List
 
 from core.models import CoreSwitch
 from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchUpdate
@@ -16,8 +16,13 @@ class CrudCoreSwitch(BaseCRUD):
     async def create(self, schema: CoreSwitchCreate) -> bool:
         core_switch = CoreSwitch(**schema.model_dump())
         self.session.add(core_switch)
-        await self.session.commit()
-        await self.session.refresh(core_switch)
+        try:
+            await self.session.commit()
+            await self.session.refresh(core_switch)
+        except Exception as e:
+            await self.session.rollback()
+            print(f"Error occurred: {e}")
+            return False
         return True
 
     async def read(self, schema=None) -> Sequence[CoreSwitch]:
@@ -51,3 +56,9 @@ class CrudCoreSwitch(BaseCRUD):
         await self.session.delete(core_switch)
         await self.session.commit()
         return True
+
+    async def get_all_core_switch_ip_addresses(self) -> List[str]:
+        result = await self.session.execute(select(CoreSwitch.ip_address))
+        ip_addresses = [row for row in result.scalars().all()]
+
+        return ip_addresses
