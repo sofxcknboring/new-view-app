@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, List, Tuple, Dict
 
 from core.models import CoreSwitch, ExcludedPort, Switch, SwitchExcludedPort
 from schemas.switch import SwitchCreate, SwitchUpdate
@@ -128,3 +128,24 @@ class CrudSwitch(BaseCRUD):
         await self.session.delete(switch)
         await self.session.commit()
         return True
+
+    async def get_snmp_params(self) -> List[Dict]:
+        """
+        Возвращает список с параметрами для запроса к SNMP-агенту.
+        Returns:
+            [
+                {
+                    'ip_address': 192.168.0.1,
+                    'snmp_oid': '1.3.6......',
+                    'excluded_ports': [1,2,3,4,5,6,....]
+                }
+            ]
+        """
+        result = await self.session.execute(select(Switch).options(selectinload(Switch.excluded_ports_relation)))
+        switches_data = []
+        for switch in result.scalars().all():
+            excluded_ports = [port.excluded_port.port_number for port in switch.excluded_ports_relation]
+            switches_data.append(
+                {"ip_address": switch.ip_address, "snmp_oid": switch.snmp_oid, "excluded_ports": excluded_ports}
+            )
+        return switches_data
