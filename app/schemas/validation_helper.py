@@ -1,5 +1,6 @@
 import re
 from ipaddress import ip_address
+from typing import Any
 
 
 class ValidationHelper:
@@ -18,10 +19,11 @@ class ValidationHelper:
         return mac
 
     @staticmethod
-    def validate_port(self, port: int) -> int:
-        if port > 9999:
-            raise ValueError(f"ValueError - port: {port}")
-        return port
+    def validate_port(port: Any) -> int:
+        try:
+            return int(port)
+        except ValueError:
+            raise ValueError(f"Not valid data: port - {port}")
 
 
 validation_helper = ValidationHelper()
