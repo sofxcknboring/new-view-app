@@ -1,4 +1,4 @@
-from typing import Sequence, List
+from typing import Sequence, List, Dict
 
 from core.models import CoreSwitch
 from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchUpdate
@@ -62,3 +62,18 @@ class CrudCoreSwitch(BaseCRUD):
         ip_addresses = [row for row in result.scalars().all()]
 
         return ip_addresses
+
+    async def get_snmp_params(self) -> List[Dict[str, str]]:
+        """
+        Возвращает список с параметрами для запроса к SNMP-агенту.
+        Returns:
+            [
+                {
+                    'ip_address': 192.168.0.1,
+                    'snmp_oid': '1.3.6......',
+                }
+            ]
+        """
+        result = await self.session.execute(select(CoreSwitch.ip_address, CoreSwitch.snmp_oid))
+        cores_data = result.fetchall()
+        return [{"ip_address": ip_address, "snmp_oid": snmp_oid} for ip_address, snmp_oid in cores_data]
