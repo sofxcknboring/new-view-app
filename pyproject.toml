@@ -7,16 +7,16 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-asyncpg = "^0.30.0"
-python-dotenv = "^1.0.1"
-sqlalchemy = "^2.0.35"
-pysnmp = "^7.1.7"
-pysnmp-lextudio = "^6.2.1"
-pydantic = "^2.9.2"
-asyncio = "^3.4.3"
+asyncpg = "0.30.0"
+python-dotenv = "1.0.1"
+sqlalchemy = "2.0.36"
+pysnmp = "7.1.11"
+pydantic = "2.9.2"
+asyncio = "3.4.3"
 fastapi = {extras = ["all"], version = "^0.115.4"}
-pydantic-settings = "^2.6.0"
-alembic = "^1.13.3"
+pydantic-settings = "2.6.1"
+alembic = "1.14.0"
+pysnmp-lextudio = "^6.3.0"
 
 
 [tool.poetry.group.lint.dependencies]
