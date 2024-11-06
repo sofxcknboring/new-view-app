@@ -1,30 +1,70 @@
-from typing import List, Sequence
+from typing import List, Sequence, Optional
 
 from core.models import Switch
 from core.services.crud.crud_switch import CrudSwitch
 from core.services.crud.helpers import get_crud
-from fastapi import APIRouter, Depends
-from schemas.switch import SwitchCreate, SwitchIpAddress, SwitchRead, SwitchUpdate
+from fastapi import APIRouter, Depends, Query, Path
+
+from schemas.device import DeviceResponse
+from schemas.switch import SwitchCreate, SwitchRead, SwitchUpdate, SwitchResponse
 
 router = APIRouter(tags=["Switch"])
-
 
 # Зависимость для работы с моделью Switch.
 dep_crud_switch = get_crud(CrudSwitch)
 
 
-@router.get("/", response_model=List[SwitchRead])
-async def get_switches(crud: CrudSwitch = Depends(dep_crud_switch)) -> Sequence[Switch]:
+@router.get("/", response_model=List[SwitchResponse])
+async def get_switches(
+    crud: CrudSwitch = Depends(dep_crud_switch),
+    switch_name: Optional[str] = Query(None, description="Параметр для поиска коммутаторов по полю 'comment'."),
+    switch_ip: Optional[str] = Query(None),
+    status: Optional[bool] = Query(True),
+    vlan: Optional[int] = Query(None),
+) -> List[SwitchResponse]:
     """
+    Args:
+        crud: Объект класса CrudSwitch, для сессий к базе данных.
+        switch_name: Параметр для поиска коммутаторов по полю "comment"
+        switch_ip: Параметр для поиска по ip-адресу
+        status: Параметр для вывода устройств по статусу.
+        vlan: Параметр для вывода устройств по значению vlan
     Returns:
-        Sequence[Switch]: Список объектов Switch из базы данных.
+        List[SwitchResponse]: Список объектов Switch из базы данных.
     """
     switches = await crud.read()
-    return switches
+
+    response_switches = []
+    for switch in switches:
+        if (switch_ip is None or switch.ip_address.startswith(switch_ip)) and (
+            switch_name is None or switch.comment.startswith(switch_name)
+        ):
+            devices = [
+                DeviceResponse(
+                    ip_address=device.ip_address,
+                    mac=device.mac,
+                    port=device.port,
+                    status=device.status,
+                    vlan=device.vlan,
+                    update_time=device.update_time,
+                )
+                for device in switch.devices
+                if (status is None or device.status == status) and (vlan is None or device.vlan == vlan)
+            ]
+            if devices:
+                response_switch = SwitchResponse(
+                    comment=switch.comment,
+                    ip_address=switch.ip_address,
+                    core_switch_ip=switch.core_switch_ip,
+                    devices=devices,
+                )
+                response_switches.append(response_switch)
+
+    return response_switches
 
 
 @router.post("/", response_model=bool)
-async def create_switch(switch_create: SwitchCreate, crud: CrudSwitch = Depends(dep_crud_switch)) -> SwitchRead:
+async def create_switch(switch_create: SwitchCreate, crud: CrudSwitch = Depends(dep_crud_switch)) -> bool:
     """
     Returns:
         bool: Успешность операции
@@ -34,7 +74,7 @@ async def create_switch(switch_create: SwitchCreate, crud: CrudSwitch = Depends(
 
 
 @router.put("/", response_model=bool)
-async def update_switch(switch_update: SwitchUpdate, crud: CrudSwitch = Depends(dep_crud_switch)) -> SwitchRead:
+async def update_switch(switch_update: SwitchUpdate, crud: CrudSwitch = Depends(dep_crud_switch)) -> bool:
     """
     Returns:
         bool: Успешность операции
@@ -44,7 +84,7 @@ async def update_switch(switch_update: SwitchUpdate, crud: CrudSwitch = Depends(
 
 
 @router.delete("/", response_model=bool)
-async def delete_switch(switch_ip: SwitchIpAddress, crud: CrudSwitch = Depends(dep_crud_switch)) -> bool:
+async def delete_switch(switch_ip: SwitchCreate, crud: CrudSwitch = Depends(dep_crud_switch)) -> bool:
     """
     Returns:
         bool: Успешность операции
