@@ -1,12 +1,10 @@
-from typing import List, Sequence, Optional
+from typing import List, Optional
 
-from core.models import Switch
 from core.services.crud.crud_switch import CrudSwitch
 from core.services.crud.helpers import get_crud
-from fastapi import APIRouter, Depends, Query, Path
-
+from fastapi import APIRouter, Depends, Path, Query
 from schemas.device import DeviceResponse
-from schemas.switch import SwitchCreate, SwitchRead, SwitchUpdate, SwitchResponse
+from schemas.switch import SwitchCreate, SwitchResponse, SwitchUpdate
 
 router = APIRouter(tags=["Switch"])
 

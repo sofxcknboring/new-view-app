@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from core.config import settings
 from core.services.snmp.snmp_base import SnmpBase
 from core.services.snmp.snmp_formatters import SwitchFormatter
-from schemas.switch import SwitchIpAddress
 from pysnmp.hlapi.asyncio import *
 
 
@@ -45,7 +44,7 @@ class SnmpV2(SnmpBase):
         результат в виде кортежа, содержащего информацию о запросе.
         Результат ответа рекомендуется форматировать в удобную структуру через класс SnmpResultFormatter.
         Args:
-            ip_address (SwitchIpAddress): IP-адрес целевого SNMP-агента
+            ip_address (str): IP-адрес целевого SNMP-агента
             snmp_oid (str): OID, значение которого необходимо получить
 
         Returns:

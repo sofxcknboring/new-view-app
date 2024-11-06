@@ -1,4 +1,4 @@
-from typing import Sequence, List, Dict
+from typing import Dict, List, Sequence
 
 from core.models import CoreSwitch
 from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchUpdate

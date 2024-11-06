@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Sequence
 
 from core.models import Device, Switch
-from schemas.device import DeviceUpdate, DeviceDataList
+from schemas.device import DeviceDataList, DeviceUpdate
 from sqlalchemy import select
 
 from .crud_base import BaseCRUD

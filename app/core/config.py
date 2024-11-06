@@ -11,12 +11,13 @@ class RunConfig(BaseModel):
         port (int): Порт, на котором приложение будет слушать запросы (по умолчанию 8000).
     """
 
-    host: str = "127.0.0.1"
+    host: str = "0.0.0.0"
     port: int = 8080
 
 
 class ApiV1Prefix(BaseModel):
     prefix: str = "/v1"
+    snmp_control: str = "/snmp_control"
     core_switches: str = "/core_switches"
     switches: str = "/switches"
     devices: str = "/devices"

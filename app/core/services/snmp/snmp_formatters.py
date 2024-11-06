@@ -1,6 +1,7 @@
-from core.services.snmp.snmp_base import SnmpResultFormatter
-from typing import Any, List, Tuple, Dict, Optional
 import re
+from typing import Any, Dict, List, Optional, Tuple
+
+from core.services.snmp.snmp_base import SnmpResultFormatter
 from schemas.validation_helper import validation_helper
 
 

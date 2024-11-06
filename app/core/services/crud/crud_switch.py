@@ -1,4 +1,4 @@
-from typing import Sequence, List, Tuple, Dict
+from typing import Dict, List, Sequence, Tuple
 
 from core.models import CoreSwitch, ExcludedPort, Switch, SwitchExcludedPort
 from schemas.switch import SwitchCreate, SwitchUpdate

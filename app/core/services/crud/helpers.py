@@ -1,4 +1,4 @@
-from typing import Callable, Type, TypeVar, Any, Coroutine
+from typing import Any, Callable, Coroutine, Type, TypeVar
 
 from core.models import db_helper
 from fastapi import Depends
