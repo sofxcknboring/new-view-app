@@ -1,38 +1,40 @@
 import asyncio
-import re
 from typing import Any, Dict, List, Tuple
 
 from core.config import settings
-from core.services.snmp.snmp_base import SnmpBase, SnmpResultFormatter
+from core.services.snmp.snmp_base import SnmpBase
+from core.services.snmp.snmp_formatters import CoreSwitchFormatter
 from pysnmp.hlapi.asyncio import *
 
 
 class SnmpV3(SnmpBase):
     """
-    SNMPv2 walk по заданным IP-адресам.
+    SNMPv3 walk по заданным IP-адресам.
 
     Attributes:
-        target_ips (List[str]): Список IP-адресов для обхода.
-        start_oid (str): Начальный OID для обхода.
+        target_switches: List[Dict[str, str]
+
+    Examples:
+        {
+            "ip_address": "IP-адрес коммутатора". - '192.168.1.1'
+            "snmp_oid": "OID для обхода" - '1.3.6.1.....'
     """
 
     def __init__(
         self,
-        target_ips: List[str],
-        start_oid: str,
+        target_switches: List[Dict[str, str]],
         user: str = settings.snmp.username,
         auth_proto: str = settings.snmp.auth_key,
         priv_proto: str = settings.snmp.priv_key,
     ):
         self.__snmp_engine = SnmpEngine()
-        self.target_ips = target_ips
-        self.start_oid = start_oid
+        self.target_switches = target_switches
         self.__context = ContextData()
         self.user = UsmUserData(
             user, auth_proto, priv_proto, authProtocol=usmHMACSHAAuthProtocol, privProtocol=usmAesCfb128Protocol
         )
 
-    async def get_snmp_response(self, target_ip, current_oid):
+    async def get_snmp_response(self, ip_address, snmp_oid) -> Tuple:
         """
         Выполняет SNMP-запрос к указанному IP-адресу для получения значения
         по заданному OID (Object Identifier).
@@ -41,8 +43,8 @@ class SnmpV3(SnmpBase):
         результат в виде кортежа, содержащего информацию о запросе.
 
         Args:
-            target_ip (str): IP-адрес целевого SNMP-агента.
-            current_oid (str): OID, значение которого необходимо получить.
+            ip_address (str): IP-адрес целевого SNMP-агента.
+            snmp_oid (str): OID, значение которого необходимо получить.
 
         Returns:
             Tuple[ErrorIndication, Any, Any, Tuple[ObjectType, ...]]:
@@ -52,12 +54,13 @@ class SnmpV3(SnmpBase):
                 - Any: Дополнительная информация, связанная с ответом.
                 - Tuple[ObjectType, ...]: Кортеж объектов типа ObjectType, представляющих запрашиваемые OID.
         """
+
         snmp_response_coroutine = next_cmd(
             self.__snmp_engine,
             self.user,
-            await UdpTransportTarget.create((target_ip, 161)),
+            await UdpTransportTarget.create((ip_address, 161)),
             self.__context,
-            ObjectType(ObjectIdentity(current_oid)),
+            ObjectType(ObjectIdentity(snmp_oid)),
             lexicographicMode=True,
         )
 
@@ -70,12 +73,12 @@ class SnmpV3(SnmpBase):
 
 
         Args:
-            method_name: Метод для вызова
+            method_name: Метод для вызова -> .walk_all("get_arp_table")
 
-        Returns: List[Dict[str, List[Dict[str, Any]]]]
+        Returns: Dict[str, List]
         """
         method = getattr(self, method_name)
-        tasks = [method(ip) for ip in self.target_ips]
+        tasks = [method(**switch) for switch in self.target_switches]
         results = await asyncio.gather(*tasks)
 
         combined_results = {}
@@ -87,57 +90,17 @@ class SnmpV3(SnmpBase):
 
         return combined_results
 
-    async def walk_arp_table(self, target_ip):
-        current_oid = self.start_oid
-        result = {target_ip: []}
+    async def get_arp_table(self, ip_address: str, snmp_oid: str) -> Dict[Any, Any]:
+        current_oid = snmp_oid
+        result = {ip_address: []}
 
-        while current_oid.startswith(self.start_oid):
-            snmp_response = self.get_snmp_response(target_ip=target_ip, current_oid=current_oid)
+        while current_oid.startswith(snmp_oid):
+            snmp_response = self.get_snmp_response(ip_address=ip_address, snmp_oid=current_oid)
 
-            formatted_response = CoreSwitchFormatter(*await snmp_response, self.start_oid)
+            formatted_response = CoreSwitchFormatter(*await snmp_response, start_oid=snmp_oid)
 
-            if formatted_response.get_error_message():
-                result[target_ip].extend({f"{target_ip}": formatted_response.get_error_message()})
-                break
-            else:
-                formatted_result, current_oid = formatted_response.get_vlan_mac_ip(target_ip=target_ip)
+            formatted_result, current_oid = formatted_response.get_vlan_mac_ip(ip_address=ip_address)
 
-                result[target_ip].extend(formatted_result[target_ip])
+            result[ip_address].extend(formatted_result[ip_address])
 
         return result
-
-
-class CoreSwitchFormatter(SnmpResultFormatter):
-
-    def __init__(self, errorIndication: Any, errorStatus: Any, errorIndex: Any, varBinds: List[Tuple], start_oid: str):
-        super().__init__(errorIndication, errorStatus, errorIndex, varBinds, start_oid)
-
-    def get_vlan_mac_ip(self, target_ip) -> Tuple[Dict, str]:
-        current_oid = None
-        formatted_result = {target_ip: []}
-
-        if not self.var_binds:
-            raise ValueError(f"OIDs not found, varBinds: {self.var_binds}")
-
-        for var_bind in self.var_binds:
-            mac = var_bind[1].prettyPrint() if var_bind else None
-            current_oid = str(var_bind[0])
-
-            if not current_oid.startswith(self.start_oid):
-                break
-
-            dis_branched_oid = self.dis_branch_oid(current_oid)
-
-            vlan = dis_branched_oid[0]
-
-            f_mac = re.findall(".{2}", mac)
-            mac = ":".join(f_mac[1:]).upper()
-            ip = ".".join(dis_branched_oid[1:])
-
-            var_bind_data = {
-                "VLAN": vlan,
-                "MAC": mac,
-                "IP": ip,
-            }
-            formatted_result[target_ip].append(var_bind_data)
-        return formatted_result, current_oid

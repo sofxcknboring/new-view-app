@@ -2,7 +2,9 @@ import asyncio
 from typing import Any, Dict, List, Optional, Tuple
 
 from core.config import settings
-from core.services.snmp.snmp_base import SnmpBase, SnmpResultFormatter
+from core.services.snmp.snmp_base import SnmpBase
+from core.services.snmp.snmp_formatters import SwitchFormatter
+from schemas.switch import SwitchIpAddress
 from pysnmp.hlapi.asyncio import *
 
 
@@ -12,7 +14,7 @@ class SnmpV2(SnmpBase):
 
     Класс реализует функциональность обхода SNMPv2 для получения информации
     о коммутаторах по заданным IP-адресам. Он позволяет выполнять SNMP-запросы
-    и обрабатывать ответы, исключая определенные ответы от SNMP-агента.
+    и обрабатывать ответы от SNMP-агента.
 
     Attributes:
         target_switches: List[Dict[str, Any]
@@ -43,7 +45,7 @@ class SnmpV2(SnmpBase):
         результат в виде кортежа, содержащего информацию о запросе.
         Результат ответа рекомендуется форматировать в удобную структуру через класс SnmpResultFormatter.
         Args:
-            ip_address (str): IP-адрес целевого SNMP-агента
+            ip_address (SwitchIpAddress): IP-адрес целевого SNMP-агента
             snmp_oid (str): OID, значение которого необходимо получить
 
         Returns:
@@ -116,65 +118,11 @@ class SnmpV2(SnmpBase):
 
             formatted_response = SwitchFormatter(*await snmp_response, start_oid=snmp_oid)
 
-            if formatted_response.get_error_message():
-                result.extend([{"SWITCH": formatted_response.get_error_message()}])
-                break
-            else:
-                formatted_result, current_oid = formatted_response.get_vlan_mac_port(
-                    ip_address=ip_address, excluded_ports=excluded_ports
-                )
-                if formatted_result:
-                    result.append(formatted_result)
-                continue
+            formatted_result, current_oid = formatted_response.get_vlan_mac_port(
+                ip_address=ip_address, excluded_ports=excluded_ports
+            )
+            if formatted_result:
+                result.append(formatted_result)
+            continue
+
         return result
-
-
-class SwitchFormatter(SnmpResultFormatter):
-
-    def __init__(self, errorIndication: Any, errorStatus: Any, errorIndex: Any, varBinds: List[Tuple], start_oid: str):
-        super().__init__(errorIndication, errorStatus, errorIndex, varBinds, start_oid)
-
-    def get_vlan_mac_port(self, ip_address, excluded_ports: Optional[List[int]]) -> Tuple[Dict, str]:
-        """
-        Извлекает информацию о VLAN, MAC-адресах и портах для заданного IP-адреса.
-
-        Args:
-            ip_address (str): IP-адрес коммутатора, для которого извлекается информация.
-            excluded_ports (Optional[List[int]]): Список портов, которые следует исключить из результатов.
-
-        Returns:
-            Tuple[Dict, str]: Кортеж, содержащий словарь с информацией о VLAN, MAC-адресе и порте,
-                              а также текущий OID, если он был найден.
-
-        Raises:
-            ValueError: Если переменные OID не найдены (varBinds пуст).
-        """
-        current_oid = None
-        formatted_result = None
-
-        if not self.var_binds:
-            raise ValueError(f"OIDs not found, varBinds: {self.var_binds}")
-
-        for var_bind in self.var_binds:
-            port = var_bind[1].prettyPrint() if var_bind else None
-            current_oid = str(var_bind[0])
-            if not current_oid.startswith(self.start_oid):
-                break
-
-            if int(port) in excluded_ports:
-                break
-
-            dis_branched_oid = self.dis_branch_oid(current_oid)
-            decimal_mac1 = map(int, dis_branched_oid[1:])
-
-            vlan = dis_branched_oid[0]
-            mac = ":".join(f"{num:02x}" for num in decimal_mac1).upper()
-
-            var_bind_data = {
-                "SWITCH": ip_address,
-                "VLAN": vlan,
-                "MAC": mac,
-                "PORT": port,
-            }
-            formatted_result = var_bind_data
-        return formatted_result, current_oid

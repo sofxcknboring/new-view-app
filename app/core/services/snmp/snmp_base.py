@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, Tuple
+from pysnmp.error import PySnmpError
 
 
 class SnmpBase(ABC):
@@ -37,14 +38,10 @@ class SnmpResultFormatter(ABC):
         start_oid (str): Начальный OID, используемый для обработки и форматирования OID.
 
     Methods:
-        has_error() -> bool:
-            Проверяет, есть ли ошибка в результате запроса.
-
-        get_error_message() -> Optional[str]:
-            Возвращает сообщение об ошибке, если таковая имеется.
 
         dis_branch_oid(oid: str) -> List[str]:
             Исключает ветку из строки OID и возвращает оставшуюся часть в виде списка.
+
     """
 
     def __init__(
@@ -56,15 +53,23 @@ class SnmpResultFormatter(ABC):
         self.var_binds = var_binds
         self.start_oid = start_oid
 
-    def has_error(self) -> bool:
-        return self.error_indication is not None or self.error_status is not None
-
-    def get_error_message(self) -> Optional[str]:
+    def find_exceptions(self) -> bool:
+        """
+        Raises:
+            PySnmpError(SNMP Error Indication) -> self.error_indication
+            PySnmpError(SNMP Error Status) -> self.error_status
+            ValueError(OIDs not found, varBinds) -> Если переменные OID не найдены (varBinds пуст).
+        """
         if self.error_indication:
-            return str(self.error_indication)
-        elif self.error_status:
-            return f"{self.error_status.prettyPrint()} at index {self.error_index}"
-        return None
+            raise PySnmpError(f"SNMP Error Indication: {self.error_indication}")
+
+        if self.error_status:
+            raise PySnmpError(f"SNMP Error Status: {self.error_status.prettyPrint()} at index {self.error_index}")
+
+        if not self.var_binds:
+            raise ValueError(f"OIDs not found, varBinds: {self.var_binds}")
+
+        return True
 
     def dis_branch_oid(self, oid: str):
         """
