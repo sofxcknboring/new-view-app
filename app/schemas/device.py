@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
@@ -9,11 +9,19 @@ class DeviceBase(BaseModel):
 
 
 class DeviceCreate(DeviceBase):
-    pass
+    switch: str = Field(..., alias="SWITCH")
+    vlan: int = Field(..., alias="VLAN")
+    mac: str = Field(..., alias="MAC")
+    port: int = Field(..., alias="PORT")
+    ip: str = Field(..., alias="IP")
+
+
+class DeviceDataList(BaseModel):
+    devices: List[DeviceCreate]
 
 
 class DeviceUpdate(DeviceBase):
-    mac: str
+    ip: str
 
 
 class DeviceRead(DeviceBase):
@@ -25,3 +33,12 @@ class DeviceRead(DeviceBase):
     status: bool
     update_time: datetime
     switch_id: int
+
+
+class DeviceResponse(DeviceBase):
+    ip_address: str
+    mac: str
+    port: int
+    vlan: int
+    status: bool
+    update_time: datetime
