@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from .device import DeviceRead, DeviceResponse
 from .validation_helper import validation_helper
+from fastapi import Query
 
 
 class SwitchBase(BaseModel):
@@ -56,3 +57,27 @@ class SwitchResponse(SwitchBase):
     ip_address: str
     core_switch_ip: str
     devices: Optional[List[DeviceResponse]] = []
+
+
+class SwitchReadQuery(BaseModel):
+    switch_comment: Optional[str] = Field(Query(
+        None,
+        description="Параметр поиска по полю 'comment' в таблице коммутаторов. Example: vlz"))
+    ip_address: Optional[str] = Field(Query(
+        None,
+        description="IP-Адрес коммутатора. Example: X.X.X.X"))
+    device_vlan: Optional[int] = Field(Query(
+        None,
+        description="Вывод устройств только с указанным VLAN. Example: 1721"))
+    device_status: Optional[bool] = Field(Query(
+        None,
+        description="Статус доступности устройства(true - Online / false - Offline)"))
+    device_comment: Optional[str] = Field(Query(
+        None,
+        description="Поиск по полю 'workplace_number' в таблице устройств. Example: Срёшь?"))
+    device_ip_address: Optional[str] = Field(Query(
+        None,
+        description="IP-Адрес устройства. Example: X.X.X.X или NOT_FOUND(Если в ARP-таблице отсутствует IP-Адрес.)"))
+    device_mac: Optional[str] = Field(Query(
+        None,
+        description="MAC-Адрес устройства. Частично или весь. Example: XX:XX или XX:XX:XX:XX:XX:XX"))
