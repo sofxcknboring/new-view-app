@@ -13,7 +13,7 @@ router = APIRouter(tags=["Device"])
 dep_crud_device = get_crud(CrudDevice)
 
 
-@router.get("/", response_model=Sequence[Device])
+@router.get("/", response_model=List[DeviceRead])
 async def get_devices(crud: CrudDevice = Depends(dep_crud_device)) -> Sequence[Device]:
     """
     В разработке возможны ошибки.
