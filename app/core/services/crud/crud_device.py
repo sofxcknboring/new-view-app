@@ -66,12 +66,12 @@ class CrudDevice(BaseCRUD):
         return result.all()
 
     async def update(self, schema: DeviceUpdate):
-        stmt = select(Device).where(Device.mac == schema.mac)
+        stmt = select(Device).where(Device.ip_address == schema.ip)
         result = await self.session.execute(stmt)
         device = result.scalar_one_or_none()
 
         if device is None:
-            raise ValueError(f"Device: {schema.mac} not found")
+            raise ValueError(f"Device: {schema.ip} not found")
 
         for attr, value in schema.model_dump(exclude_none=True).items():
             setattr(device, attr, value)

@@ -1,7 +1,7 @@
 from typing import Dict, List, Sequence
 
 from core.models import CoreSwitch, ExcludedPort, Switch, SwitchExcludedPort
-from schemas.switch import SwitchCreate, SwitchUpdate
+from schemas.switch import SwitchCreate, SwitchUpdate, SwitchReadQuery
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -60,10 +60,35 @@ class CrudSwitch(BaseCRUD):
         await self.session.commit()
         return True
 
-    async def read(self, schema=None) -> Sequence[Switch]:
+    async def read(self, schema=SwitchReadQuery) -> Sequence[Switch]:
         stmt = select(Switch).options(selectinload(Switch.devices)).order_by(Switch.id)
+
+        if schema.switch_comment:
+            stmt = stmt.where(Switch.comment.ilike(f"%{schema.switch_comment}%"))
+        if schema.ip_address:
+            stmt = stmt.where(Switch.ip_address.ilike(f"%{schema.ip_address}%"))
+
         result = await self.session.scalars(stmt)
-        return result.all()
+        switches = result.all()
+
+        switches_result = []
+
+        for switch in switches:
+            switch.devices = [
+                device
+                for device in switch.devices
+                if (schema.device_status is None or device.status == schema.device_status)
+                and (schema.device_vlan is None or schema.device_vlan in device.vlan)
+                and (schema.device_comment is None
+                     or (device.workplace_number is not None and schema.device_comment in device.workplace_number))
+                and (schema.device_ip_address is None or schema.device_ip_address in device.ip_address)
+                and (schema.device_mac is None or schema.device_mac.upper() in device.mac)
+            ]
+            if switch.devices:
+                switches_result.append(switch)
+
+        return switches_result
+
 
     async def update(self, schema: SwitchUpdate) -> bool:
         stmt = select(Switch).where(Switch.ip_address == schema.ip_address)
