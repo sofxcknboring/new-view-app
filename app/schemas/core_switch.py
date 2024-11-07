@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator
-from schemas.switch import SwitchRead
+from schemas.switch import SwitchReadForCore
 
 from .validation_helper import validation_helper
 
@@ -25,7 +25,6 @@ class CoreSwitchUpdate(CoreSwitchCreate):
 
 
 class CoreSwitchRead(CoreSwitchBase):
-    id: int
     ip_address: str
     snmp_oid: str
-    switches: Optional[List[SwitchRead]] = []
+    switches: Optional[List[SwitchReadForCore]] = []

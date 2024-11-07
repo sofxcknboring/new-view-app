@@ -21,13 +21,17 @@ class SwitchIpAddress(BaseModel):
 
 
 class SwitchCreate(SwitchBase):
-    ip_address: SwitchIpAddress = Field(None, description="IP-адрес коммутатора")
+    ip_address: str = Field(None, description="IP-адрес коммутатора")
     snmp_oid: Optional[str] = Field("1.3.6.1.2.1.17.7.1.2.2.1.2", description="Идентификатор SNMP-агента")
     core_switch_ip: str = Field(None, description="IP-адрес опорного коммутатора")
     excluded_ports_relation: Optional[List[int]] = Field(
         [23, 24, 25, 26, 27, 28, 29, 30, 105, 209, 1000], description="Excluded ports"
     )
 
+    @field_validator("ip_address")
+    def validate_mac_address(cls, ip_address):
+        ip_address = validation_helper.validate_ip_address(ip_address)
+        return ip_address
 
 class SwitchUpdate(SwitchCreate):
     pass
@@ -50,6 +54,12 @@ class SwitchRead(SwitchBase):
     snmp_oid: str
     core_switch_ip: str
     devices: Optional[List[DeviceRead]] = []
+    excluded_ports_relation: List[SwitchExcludedPortBase] = []
+
+
+class SwitchReadForCore(SwitchBase):
+    ip_address: str
+    snmp_oid: str
     excluded_ports_relation: List[SwitchExcludedPortBase] = []
 
 

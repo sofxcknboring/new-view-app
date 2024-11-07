@@ -1,7 +1,7 @@
 from typing import Dict, List, Sequence
 
 from core.models import CoreSwitch
-from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchUpdate
+from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchUpdate, CoreSwitchRead
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -25,7 +25,7 @@ class CrudCoreSwitch(BaseCRUD):
             return False
         return True
 
-    async def read(self, schema=None) -> Sequence[CoreSwitch]:
+    async def read(self, schema=CoreSwitchRead) -> Sequence[CoreSwitch]:
         stmt = select(CoreSwitch).options(selectinload(CoreSwitch.switches)).order_by(CoreSwitch.id)
         result = await self.session.scalars(stmt)
         return result.all()
