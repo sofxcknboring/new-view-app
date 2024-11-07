@@ -16,8 +16,8 @@ dep_crud_device = get_crud(CrudDevice)
 @router.get("/", response_model=List[DeviceRead])
 async def get_devices(crud: CrudDevice = Depends(dep_crud_device)) -> Sequence[Device]:
     """
-    В разработке возможны ошибки.
-    Returns:
+    В разработке, возможны ошибки.\n
+    Returns:\n
         Возвращает список всех устройств.
     """
     devices = await crud.read()
@@ -29,11 +29,11 @@ async def change_workplace_name_by_ip_address(
         device_update: DeviceUpdate,
         crud: CrudDevice = Depends(dep_crud_device)) -> dict:
     """
-    В разработке возможны ошибки.
+    В разработке возможны ошибки.\n
 
-    Изменить поле "workplace_number" на устройстве.
+    Изменить поле "workplace_number" на устройстве.\n
 
-    Returns:
+    Returns:\n
         200 -> XX.XX.XX.XX is updated. New comment: "New comment"
         500 -> Device Update failed -> Device: XX.XX.XX.XX not found.
     """

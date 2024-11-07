@@ -17,7 +17,12 @@ async def get_switches(
     crud: CrudSwitch = Depends(dep_crud_switch),
     queries: SwitchReadQuery = Depends(),
 ) -> Sequence[Switch]:
+    """
+    В разработке, возможны ошибки.\n
 
+    Returns:\n
+        Возвращает список коммутаторов отфильтрованных по параметрам(Query)
+    """
     switches = await crud.read(queries)
 
     return switches
@@ -26,7 +31,7 @@ async def get_switches(
 @router.post("/", response_model=bool)
 async def create_switch(switch_create: SwitchCreate, crud: CrudSwitch = Depends(dep_crud_switch)) -> bool:
     """
-    Returns:
+    Returns:\n
         bool: Успешность операции
     """
     is_new_core_switch = await crud.create(schema=switch_create)
@@ -36,7 +41,7 @@ async def create_switch(switch_create: SwitchCreate, crud: CrudSwitch = Depends(
 @router.put("/", response_model=bool)
 async def update_switch(switch_update: SwitchUpdate, crud: CrudSwitch = Depends(dep_crud_switch)) -> bool:
     """
-    Returns:
+    Returns:\n
         bool: Успешность операции
     """
     is_updated_switch = await crud.update(schema=switch_update)
@@ -46,7 +51,7 @@ async def update_switch(switch_update: SwitchUpdate, crud: CrudSwitch = Depends(
 @router.delete("/", response_model=bool)
 async def delete_switch(switch_ip: SwitchCreate, crud: CrudSwitch = Depends(dep_crud_switch)) -> bool:
     """
-    Returns:
+    Returns:\n
         bool: Успешность операции
     """
     is_deleted_switch = await crud.delete(schema=switch_ip)

@@ -78,7 +78,7 @@ class CrudSwitch(BaseCRUD):
                 device
                 for device in switch.devices
                 if (schema.device_status is None or device.status == schema.device_status)
-                and (schema.device_vlan is None or schema.device_vlan in device.vlan)
+                and (schema.device_vlan is None or str(schema.device_vlan) in str(device.vlan))
                 and (schema.device_comment is None
                      or (device.workplace_number is not None and schema.device_comment in device.workplace_number))
                 and (schema.device_ip_address is None or schema.device_ip_address in device.ip_address)
