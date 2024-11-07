@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Sequence
 
+from core.models import Device
 from core.services.crud.crud_device import CrudDevice
 from core.services.crud.helpers import get_crud
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from schemas.device import DeviceRead, DeviceUpdate
 
 router = APIRouter(tags=["Device"])
@@ -12,21 +13,37 @@ router = APIRouter(tags=["Device"])
 dep_crud_device = get_crud(CrudDevice)
 
 
-@router.get("/", response_model=List[DeviceRead])
-async def get_devices(crud: CrudDevice = Depends(dep_crud_device)) -> List[DeviceRead]:
+@router.get("/", response_model=Sequence[Device])
+async def get_devices(crud: CrudDevice = Depends(dep_crud_device)) -> Sequence[Device]:
     """
+    В разработке возможны ошибки.
     Returns:
-        List[DeviceRead]: Список объектов Device из базы данных.
+        Возвращает список всех устройств.
     """
     devices = await crud.read()
     return devices
 
 
-@router.put("/", response_model=bool)
-async def update_device(device_update: DeviceUpdate, crud: CrudDevice = Depends(dep_crud_device)) -> DeviceRead:
+@router.put("/", response_model=dict)
+async def change_workplace_name_by_ip_address(
+        device_update: DeviceUpdate,
+        crud: CrudDevice = Depends(dep_crud_device)) -> dict:
     """
+    В разработке возможны ошибки.
+
+    Изменить поле "workplace_number" на устройстве.
+
     Returns:
-        bool: Успешность операции
+        200 -> XX.XX.XX.XX is updated. New comment: "New comment"
+        500 -> Device Update failed -> Device: XX.XX.XX.XX not found.
     """
-    is_updated_device = await crud.update(schema=device_update)
-    return is_updated_device
+
+    try:
+        updated_device = await crud.update(schema=device_update)
+        if updated_device:
+            return {"message": f"{device_update.ip} is updated. New comment: {device_update.workplace_number}"}
+        else:
+            raise HTTPException(status_code=500, detail="Device Update failed")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
