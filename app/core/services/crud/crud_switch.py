@@ -1,7 +1,7 @@
 from typing import Dict, List, Sequence
 
 from core.models import CoreSwitch, ExcludedPort, Switch, SwitchExcludedPort
-from schemas.switch import SwitchCreate, SwitchUpdate, SwitchReadQuery
+from schemas.switch import SwitchCreate, SwitchUpdate, SwitchReadQuery, SwitchRead, SwitchIpAddress
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -13,7 +13,7 @@ class CrudSwitch(BaseCRUD):
     Crud класс для коммутаторов.
     """
 
-    async def create(self, schema: SwitchCreate) -> bool:
+    async def create(self, schema: SwitchCreate) -> Switch:
         existing_switch = await self.session.execute(select(Switch).where(Switch.ip_address == schema.ip_address))
         existing_switch = existing_switch.scalar_one_or_none()
 
@@ -58,7 +58,8 @@ class CrudSwitch(BaseCRUD):
                 self.session.add(switch_excluded_port)
 
         await self.session.commit()
-        return True
+        await self.session.refresh(switch)
+        return switch
 
     async def read(self, schema=SwitchReadQuery) -> Sequence[Switch]:
         stmt = select(Switch).options(selectinload(Switch.devices)).order_by(Switch.id)
@@ -79,8 +80,10 @@ class CrudSwitch(BaseCRUD):
                 for device in switch.devices
                 if (schema.device_status is None or device.status == schema.device_status)
                 and (schema.device_vlan is None or str(schema.device_vlan) in str(device.vlan))
-                and (schema.device_comment is None
-                     or (device.workplace_number is not None and schema.device_comment in device.workplace_number))
+                and (
+                    schema.device_comment is None
+                    or (device.workplace_number is not None and schema.device_comment in device.workplace_number)
+                )
                 and (schema.device_ip_address is None or schema.device_ip_address in device.ip_address)
                 and (schema.device_mac is None or schema.device_mac.upper() in device.mac)
             ]
@@ -89,14 +92,31 @@ class CrudSwitch(BaseCRUD):
 
         return switches_result
 
+    async def get_switches_configures(self) -> List[Dict]:
+        stmt = select(Switch).options(selectinload(Switch.excluded_ports_relation))
 
-    async def update(self, schema: SwitchUpdate) -> bool:
-        stmt = select(Switch).where(Switch.ip_address == schema.ip_address)
+        switches = await self.session.execute(stmt)
+        switches = switches.scalars().all()
+        switch_data = []
+        for switch in switches:
+            switch_info = {
+                "id": switch.id,
+                "ip_address": switch.ip_address,
+                "snmp_oid": switch.snmp_oid,
+                "core_switch_ip": switch.core_switch_ip,
+                "excluded_ports": switch.excluded_ports_relation
+            }
+            switch_data.append(switch_info)
+
+        return switch_data
+
+    async def update(self, schema: SwitchUpdate, ip_address=None) -> Switch:
+        stmt = select(Switch).where(Switch.ip_address == ip_address)
         result = await self.session.execute(stmt)
         switch = result.scalar_one_or_none()
 
         if switch is None:
-            raise ValueError(f"Switch: {schema.ip_address} not found")
+            raise ValueError(f"Switch: {ip_address} not found")
 
         if schema.comment is not None:
             switch.comment = schema.comment
@@ -137,22 +157,23 @@ class CrudSwitch(BaseCRUD):
                 self.session.add(switch_excluded_port)
 
         await self.session.commit()
-        return True
+        await self.session.refresh(switch)
+        return switch
 
-    async def delete(self, schema: SwitchCreate) -> bool:
-        stmt = select(Switch).where(Switch.ip_address == schema.ip_address)
+    async def delete(self, schema) -> Switch:
+        stmt = select(Switch).where(Switch.ip_address == schema)
         result = await self.session.execute(stmt)
         switch = result.scalar_one_or_none()
 
         if switch is None:
-            return False
+            raise ValueError(f'Switch {schema} not found')
 
         for excluded_port in switch.excluded_ports_relation:
             await self.session.delete(excluded_port)
 
         await self.session.delete(switch)
         await self.session.commit()
-        return True
+        return switch
 
     async def get_snmp_params(self) -> List[Dict]:
         """

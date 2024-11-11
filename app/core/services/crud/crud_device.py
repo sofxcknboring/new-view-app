@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Sequence
 
 from core.models import Device, Switch
-from schemas.device import DeviceDataList, DeviceUpdate
+from schemas.device import DeviceDataList, DeviceUpdate, DeviceQuery
 from sqlalchemy import select
 
 from .crud_base import BaseCRUD
@@ -60,25 +60,28 @@ class CrudDevice(BaseCRUD):
         await self.session.commit()
         return True
 
-    async def read(self, schema=None) -> Sequence[Device]:
+    async def read(self, schema=DeviceQuery) -> Sequence[Device]:
         stmt = select(Device).order_by(Device.port)
-        result = await self.session.scalars(stmt)
-        return result.all()
 
-    async def update(self, schema: DeviceUpdate):
-        stmt = select(Device).where(Device.ip_address == schema.ip)
+        if schema.ip_address:
+            stmt = stmt.where(Device.ip_address.ilike(f"%{schema.ip_address}%"))
+        result = await self.session.scalars(stmt)
+        devices = result.all()
+        return devices
+
+    async def update(self, schema: DeviceUpdate, ip_address=None) -> Device:
+        stmt = select(Device).where(Device.ip_address == ip_address)
         result = await self.session.execute(stmt)
         device = result.scalar_one_or_none()
 
         if device is None:
-            raise ValueError(f"Device: {schema.ip} not found")
+            raise ValueError(f'Device {ip_address} not found')
 
         for attr, value in schema.model_dump(exclude_none=True).items():
             setattr(device, attr, value)
 
         await self.session.commit()
-        await self.session.refresh(device)
-        return True
+        return device
 
     async def delete(self, schema):
         pass

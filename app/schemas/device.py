@@ -1,11 +1,15 @@
 from datetime import datetime
 from typing import List, Optional
 
+from fastapi import Query
 from pydantic import BaseModel, Field
 
 
 class DeviceBase(BaseModel):
     workplace_number: Optional[str] = Field(None, max_length=50, description="Комментарий, не более 50 символов")
+
+    class Config:
+        from_attributes = True
 
 
 class DeviceCreate(DeviceBase):
@@ -21,7 +25,7 @@ class DeviceDataList(BaseModel):
 
 
 class DeviceUpdate(DeviceBase):
-    ip: str
+    pass
 
 
 class DeviceRead(DeviceBase):
@@ -33,6 +37,10 @@ class DeviceRead(DeviceBase):
     status: bool
     update_time: datetime
     switch_id: int
+
+
+class DeviceQuery(BaseModel):
+    ip_address: Optional[str] = Field(Query(None))
 
 
 class DeviceResponse(DeviceBase):

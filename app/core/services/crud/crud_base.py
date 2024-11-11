@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from schemas.switch import SwitchIpAddress
 
 class BaseCRUD(ABC):
 
@@ -17,7 +17,7 @@ class BaseCRUD(ABC):
         pass
 
     @abstractmethod
-    async def update(self, schema):
+    async def update(self, schema, ip_address: SwitchIpAddress = None):
         pass
 
     @abstractmethod

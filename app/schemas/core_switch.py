@@ -7,21 +7,37 @@ from .validation_helper import validation_helper
 
 
 class CoreSwitchBase(BaseModel):
-    name: Optional[str] = Field(None, max_length=50, description="Коммент. Не более 50 символов")
+    name: Optional[str] = Field(None, max_length=50)
+
+    class Config:
+        from_attributes = True
 
 
 class CoreSwitchCreate(CoreSwitchBase):
-    ip_address: Optional[str] = Field(None, description="IP-адрес опорного коммутатора")
-    snmp_oid: Optional[str] = Field("1.3.6.1.2.1.4.22.1.2", description="Идентификатор SNMP-агента")
+    ip_address: Optional[str] = Field(None)
+    snmp_oid: Optional[str] = Field("1.3.6.1.2.1.4.22.1.2")
 
     @field_validator("ip_address")
-    @classmethod
     def validate_ip_address(cls, value: Optional[str]) -> Optional[str]:
-        return validation_helper.validate_ip_address(ip=value)
+        if value is not None:
+            return validation_helper.validate_ip_address(ip=value)
+        return value
+
+    @field_validator("snmp_oid")
+    def validate_snmp_oid(cls, value: Optional[str]) -> str:
+        if value is None:
+            return '1.3.6.1.2.1.4.22.1.2'
+        return validation_helper.validate_core_switch_oid(oid=value)
 
 
 class CoreSwitchUpdate(CoreSwitchCreate):
     pass
+
+
+class CoreSwitchResponse(CoreSwitchBase):
+    id: int
+    ip_address: str
+    snmp_oid: str
 
 
 class CoreSwitchRead(CoreSwitchBase):

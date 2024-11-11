@@ -4,6 +4,19 @@ from typing import Any
 
 
 class ValidationHelper:
+    @staticmethod
+    def validate_core_switch_oid(oid: str) -> str:
+        pattern = r"^1\.3\.6\.1\.2\.1\.4\.22\.(0|9|\d).(0|9|\d)$"
+        if not re.match(pattern, oid):
+            raise ValueError(f"ValueError - OID: {oid}. Check DOCs. OID must 1.3.6.1.2.1.4.22.1.2")
+        return oid
+
+    @staticmethod
+    def validate_switch_oid(oid: str) -> str:
+        pattern = r"^1\.3\.6\.1\.2\.1\.17\.7\.1\.2\.2\.1\.2$"
+        if not re.match(pattern, oid):
+            raise ValueError(f"ValueError - OID: {oid}. Check DOCs OID must be 1.3.6.1.2.1.17.7.1.2.2.1.2")
+        return oid
 
     @staticmethod
     def validate_ip_address(ip: str) -> str:

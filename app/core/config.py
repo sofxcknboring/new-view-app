@@ -21,6 +21,7 @@ class ApiV1Prefix(BaseModel):
     core_switches: str = "/core_switches"
     switches: str = "/switches"
     devices: str = "/devices"
+    device_control: str = "/device_control"
 
 
 class ApiPrefix(BaseModel):
@@ -54,7 +55,7 @@ class DataBaseConfig(BaseModel):
     host: str
     port: int
     database: str
-    echo: bool = True
+    echo: bool = False
     echo_pool: bool = False
     pool_size: int = 50
     max_overflow: int = 10
@@ -83,6 +84,11 @@ class SnmpConfig(BaseModel):
     community: str
 
 
+class WinRmConfig(BaseModel):
+
+    username: str
+    password: str
+
 class Setting(BaseSettings):
     """
     Основной класс настроек приложения, объединяющий все конфигурации.
@@ -103,6 +109,7 @@ class Setting(BaseSettings):
     )
     run: RunConfig = RunConfig()
     api: ApiPrefix = ApiPrefix()
+    winrm: WinRmConfig
     db: DataBaseConfig
     snmp: SnmpConfig
     api_key: str

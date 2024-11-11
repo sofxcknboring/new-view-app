@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from core.models import db_helper
@@ -50,3 +51,8 @@ async def add_snmp_to_data_base() -> bool:
         await devices.create(device_data_list)
 
         return True
+
+
+sw_params = [
+    {"ip_address": "10.254.243.25", "snmp_oid": "1.3.6.1.2.1.17.7.1.2.2.1.2", "excluded_ports": [23, 24, 209]}
+]
