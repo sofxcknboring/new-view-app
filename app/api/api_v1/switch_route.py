@@ -79,7 +79,7 @@ async def create_switch(switch_create: SwitchCreate, crud: CrudSwitch = Depends(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/update/{ip_address}", response_model=SwitchResponse)
+@router.post("/update/{ip_address}", response_model=SwitchResponse)
 async def update_switch(ip_address, switch_update: SwitchUpdate, crud: CrudSwitch = Depends(dep_crud_switch)) -> SwitchResponse:
     """
     Returns:\n
@@ -105,7 +105,7 @@ async def update_switch(ip_address, switch_update: SwitchUpdate, crud: CrudSwitc
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/delete/{ip_address}", response_model=SwitchResponse)
+@router.post("/delete/{ip_address}", response_model=SwitchResponse)
 async def delete_switch(ip_address: str, crud: CrudSwitch = Depends(dep_crud_switch)) -> SwitchResponse:
     """
     Returns:\n

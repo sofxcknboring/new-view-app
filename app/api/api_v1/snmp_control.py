@@ -11,7 +11,7 @@ last_run_time = None
 lock_duration = timedelta(minutes=15)
 
 
-@router.get("/", response_model=dict)
+@router.post("/", response_model=dict)
 async def update_snmp():
     """
     В разработке, возможны ошибки.\n

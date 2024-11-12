@@ -37,7 +37,7 @@ async def get_devices(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/change/{ip_address}", response_model=DeviceRead)
+@router.post("/change/{ip_address}", response_model=DeviceRead)
 async def change_workplace_name_by_ip_address(
     ip_address,
     device_update: DeviceUpdate, crud: CrudDevice = Depends(dep_crud_device)

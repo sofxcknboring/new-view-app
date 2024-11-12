@@ -74,7 +74,7 @@ async def create_core_switch(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/update/{ip_address}", response_model=CoreSwitchResponse)
+@router.post("/update/{ip_address}", response_model=CoreSwitchResponse)
 async def update_core_switch(
     ip_address,
     core_switch_update: CoreSwitchUpdate, crud: CrudCoreSwitch = Depends(dep_crud_core_switch)
@@ -112,7 +112,7 @@ async def update_core_switch(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/delete", response_model=CoreSwitchResponse)
+@router.post("/delete", response_model=CoreSwitchResponse)
 async def delete_core_switch(
     core_switch_base: CoreSwitchBase, crud: CrudCoreSwitch = Depends(dep_crud_core_switch)
 ) -> CoreSwitchResponse:
