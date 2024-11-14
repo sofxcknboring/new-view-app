@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from core.services.device_control.device_controller import get_win_user
-router = APIRouter(tags=["DeviceControl"])
 
+router = APIRouter(tags=["DeviceControl"])
 
 
 @router.get("/get_user/{ip_address}", response_model=dict)
@@ -17,6 +17,6 @@ def get_active_user(ip_address: str):
     """
     try:
         user = get_win_user(ip_address=ip_address)
-        return {'message': user}
+        return {"message": user}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

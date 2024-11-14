@@ -89,6 +89,7 @@ class WinRmConfig(BaseModel):
     username: str
     password: str
 
+
 class Setting(BaseSettings):
     """
     Основной класс настроек приложения, объединяющий все конфигурации.
@@ -101,6 +102,7 @@ class Setting(BaseSettings):
         api_key (str): API ключ для авторизации.
     """
 
+    # app/.env
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=False,

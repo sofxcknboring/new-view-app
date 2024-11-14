@@ -60,14 +60,15 @@ async def create_core_switch(
         response = CoreSwitchResponse.from_orm(new_core_switch)
         return response
     except IntegrityError as e:
-        if 'ix_core_switches_ip_address' in str(e.orig):
+        if "ix_core_switches_ip_address" in str(e.orig):
             raise HTTPException(
                 status_code=409,
-                detail=f"Ошибка: IP-адрес {core_switch_create.ip_address} уже существует в базе данных.") from e
-        elif 'ix_core_switches_name' in str(e.orig):
+                detail=f"Ошибка: IP-адрес {core_switch_create.ip_address} уже существует в базе данных.",
+            ) from e
+        elif "ix_core_switches_name" in str(e.orig):
             raise HTTPException(
-                status_code=409,
-                detail=f"Ошибка: Имя {core_switch_create.name} уже существует в базе данных.") from e
+                status_code=409, detail=f"Ошибка: Имя {core_switch_create.name} уже существует в базе данных."
+            ) from e
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=e.errors())
     except Exception as e:
@@ -76,8 +77,7 @@ async def create_core_switch(
 
 @router.post("/update/{ip_address}", response_model=CoreSwitchResponse)
 async def update_core_switch(
-    ip_address,
-    core_switch_update: CoreSwitchUpdate, crud: CrudCoreSwitch = Depends(dep_crud_core_switch)
+    ip_address, core_switch_update: CoreSwitchUpdate, crud: CrudCoreSwitch = Depends(dep_crud_core_switch)
 ) -> CoreSwitchResponse:
     """
     В разработке, возможны ошибки.\n
@@ -100,14 +100,15 @@ async def update_core_switch(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except IntegrityError as e:
-        if 'ix_core_switches_ip_address' in str(e.orig):
+        if "ix_core_switches_ip_address" in str(e.orig):
             raise HTTPException(
                 status_code=409,
-                detail=f"Ошибка: IP-адрес {core_switch_update.ip_address} уже существует в базе данных.") from e
-        elif 'ix_core_switches_name' in str(e.orig):
+                detail=f"Ошибка: IP-адрес {core_switch_update.ip_address} уже существует в базе данных.",
+            ) from e
+        elif "ix_core_switches_name" in str(e.orig):
             raise HTTPException(
-                status_code=409,
-                detail=f"Ошибка: Имя {core_switch_update.name} уже существует в базе данных.") from e
+                status_code=409, detail=f"Ошибка: Имя {core_switch_update.name} уже существует в базе данных."
+            ) from e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

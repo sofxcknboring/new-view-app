@@ -1,12 +1,15 @@
 from typing import List, Sequence
 
+
 from pydantic import ValidationError
+from sqlalchemy import exc
+
 
 from core.models import Switch
 from core.services.crud.crud_switch import CrudSwitch
 from core.services.crud.helpers import get_crud
 from fastapi import APIRouter, Depends, HTTPException
-from schemas.switch import SwitchCreate, SwitchResponse, SwitchUpdate, SwitchReadQuery, SwitchRead
+from schemas.switch import SwitchCreate, SwitchResponse, SwitchUpdate, SwitchReadQuery, SwitchRead, SwitchConfRead
 
 router = APIRouter(tags=["Switch"])
 
@@ -35,21 +38,21 @@ async def get_switches(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get('/show-configures', response_model=List[SwitchRead])
+@router.get("/show-configures", response_model=List[SwitchConfRead])
 async def get_switches_configures(
-        crud: CrudSwitch = Depends(dep_crud_switch),
-) -> List[SwitchRead]:
+    crud: CrudSwitch = Depends(dep_crud_switch),
+) -> List[SwitchConfRead]:
     switches_with_ports = await crud.get_switches_configures()
     switch_data = []
     for switch in switches_with_ports:
-        switch_info = SwitchRead(
-            id=switch['id'],
-            ip_address=switch['ip_address'],
-            snmp_oid=switch['snmp_oid'],
-            core_switch_ip=switch['core_switch_ip'],
-            excluded_ports=[
-                ep.excluded_port.port_number for ep in switch['excluded_ports']
-            ]
+        switch_info = SwitchConfRead(
+            id=switch["id"],
+            comment=switch["comment"],
+            ip_address=switch["ip_address"],
+            snmp_oid=switch["snmp_oid"],
+            core_switch_ip=switch["core_switch_ip"],
+            devices_count=switch["devices_count"],
+            excluded_ports=[ep.excluded_port.port_number for ep in switch["excluded_ports"]],
         )
         switch_data.append(switch_info)
 
@@ -80,7 +83,9 @@ async def create_switch(switch_create: SwitchCreate, crud: CrudSwitch = Depends(
 
 
 @router.post("/update/{ip_address}", response_model=SwitchResponse)
-async def update_switch(ip_address, switch_update: SwitchUpdate, crud: CrudSwitch = Depends(dep_crud_switch)) -> SwitchResponse:
+async def update_switch(
+    ip_address, switch_update: SwitchUpdate, crud: CrudSwitch = Depends(dep_crud_switch)
+) -> SwitchResponse:
     """
     Returns:\n
         200: SwitchResponse: Информация об измененном коммутаторе.
@@ -100,7 +105,10 @@ async def update_switch(ip_address, switch_update: SwitchUpdate, crud: CrudSwitc
     except ValueError as e:
         if "not found" in str(e):
             raise HTTPException(status_code=404, detail=str(e))
-        raise HTTPException(status_code=409, detail=str(e))
+    except exc.SQLAlchemyError as e:
+        if "IntegrityError" in str(e):
+            raise HTTPException(status_code=409, detail=f"already exist or None: {switch_update.ip_address}")
+        raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

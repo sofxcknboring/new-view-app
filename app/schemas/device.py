@@ -6,22 +6,26 @@ from pydantic import BaseModel, Field
 
 
 class DeviceBase(BaseModel):
-    workplace_number: Optional[str] = Field(None, max_length=50, description="Комментарий, не более 50 символов")
+    workplace_number: Optional[str] = Field(None, max_length=50)
 
     class Config:
         from_attributes = True
 
 
-class DeviceCreate(DeviceBase):
-    switch: str = Field(..., alias="SWITCH")
+class DeviceCreate(BaseModel):
     vlan: int = Field(..., alias="VLAN")
     mac: str = Field(..., alias="MAC")
     port: int = Field(..., alias="PORT")
     ip: str = Field(..., alias="IP")
 
 
-class DeviceDataList(BaseModel):
+class SwitchDevices(BaseModel):
+    switch: str = Field(..., alias="SWITCH")
     devices: List[DeviceCreate]
+
+
+class DevicesSnmpResponse(BaseModel):
+    switches: List[SwitchDevices]
 
 
 class DeviceUpdate(DeviceBase):

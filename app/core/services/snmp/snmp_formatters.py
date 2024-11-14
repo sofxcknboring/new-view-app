@@ -73,7 +73,6 @@ class CoreSwitchFormatter(SnmpResultFormatter):
         for var_bind in self.var_binds:
             mac = var_bind[1].prettyPrint() if var_bind else None
             current_oid = str(var_bind[0])
-
             if not current_oid.startswith(self.start_oid):
                 break
 
@@ -81,7 +80,7 @@ class CoreSwitchFormatter(SnmpResultFormatter):
 
             vlan = int(dis_branched_oid[0])
             f_mac = re.findall(".{2}", mac)
-            mac = validation_helper.validate_mac_address(":".join(f_mac[1:]).upper())
+            mac = ":".join(f_mac[1:]).upper()
             ip = validation_helper.validate_ip_address(".".join(dis_branched_oid[1:]))
 
             var_bind_data = {

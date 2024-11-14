@@ -5,7 +5,6 @@ from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchUpda
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-
 from .crud_base import BaseCRUD
 
 
@@ -56,23 +55,30 @@ class CrudCoreSwitch(BaseCRUD):
         await self.session.commit()
         return core_switch
 
-    async def get_all_core_switch_ip_addresses(self) -> List[str]:
-        result = await self.session.execute(select(CoreSwitch.ip_address))
-        ip_addresses = [row for row in result.scalars().all()]
-
-        return ip_addresses
-
     async def get_snmp_params(self) -> List[Dict[str, str]]:
-        """
-        Возвращает список с параметрами для запроса к SNMP-агенту.
-        Returns:
-            [
-                {
-                    'ip_address': 192.168.0.1,
-                    'snmp_oid': '1.3.6......',
+        """ """
+        stmt = (
+            select(CoreSwitch)
+            .options(selectinload(CoreSwitch.switches).selectinload(Switch.excluded_ports_relation))
+            .order_by(CoreSwitch.id)
+        )
+
+        result = await self.session.scalars(stmt)
+
+        core_switches = result.all()
+        formatted_result = []
+
+        for core in core_switches:
+            core_data = {"core_switch_ip": core.ip_address, "oid": core.snmp_oid, "switches": []}
+            for switch in core.switches:
+                switch_data = {
+                    "ip_address": switch.ip_address,
+                    "snmp_oid": switch.snmp_oid,
+                    "excluded_ports": [
+                        excluded_port.excluded_port.port_number for excluded_port in switch.excluded_ports_relation
+                    ],
                 }
-            ]
-        """
-        result = await self.session.execute(select(CoreSwitch.ip_address, CoreSwitch.snmp_oid))
-        cores_data = result.fetchall()
-        return [{"ip_address": ip_address, "snmp_oid": snmp_oid} for ip_address, snmp_oid in cores_data]
+                core_data["switches"].append(switch_data)
+            formatted_result.append(core_data)
+
+        return formatted_result

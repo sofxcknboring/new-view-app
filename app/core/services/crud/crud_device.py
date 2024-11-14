@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
 from typing import Sequence
 
+
 from core.models import Device, Switch
-from schemas.device import DeviceDataList, DeviceUpdate, DeviceQuery
+from schemas.device import DeviceUpdate, DeviceQuery, DevicesSnmpResponse
 from sqlalchemy import select
 
 from .crud_base import BaseCRUD
@@ -10,52 +11,56 @@ from .crud_base import BaseCRUD
 
 class CrudDevice(BaseCRUD):
 
-    async def create(self, schema: DeviceDataList):
+    async def create(self, schema: DevicesSnmpResponse):
 
-        existing_device_query = await self.session.execute(select(Device))
-        existing_devices = existing_device_query.scalars().all()
+        switches = {}
 
-        new_device_keys = {(device.switch, device.port) for device in schema.devices}
+        switch_query = await self.session.execute(
+            select(Switch).where(Switch.ip_address.in_([s.switch for s in schema.switches]))
+        )
+        db_switches = switch_query.scalars().all()
 
-        for device in existing_devices:
-            key = (device.switch.ip_address, device.port)
-            if key in new_device_keys:
-                new_device_data = next(
-                    d for d in schema.devices if d.switch == device.switch.ip_address and d.port == device.port
-                )
-                device.mac = new_device_data.mac
-                device.vlan = new_device_data.vlan
-                device.ip_address = new_device_data.ip
-                device.status = True
-                device.update_time = datetime.now(timezone.utc)
-            else:
-                device.status = False
+        for switch in db_switches:
+            switches[switch.ip_address] = switch
 
-        for new_device in schema.devices:
-            switch_ip = new_device.switch
-            switch = await self.session.execute(select(Switch).filter(Switch.ip_address == switch_ip))
-            switch = switch.scalars().first()
+        for switch_data in schema.switches:
+            switch_ip = switch_data.switch
+            db_switch = switches.get(switch_ip)
 
-            if not switch:
+            if not db_switch:
                 raise ValueError(f"Switch with IP {switch_ip} not found.")
 
-            existing_device_query = await self.session.execute(
-                select(Device).filter(Device.switch_id == switch.id, Device.port == new_device.port)
-            )
-            existing_device = existing_device_query.scalars().first()
+            existing_device_query = await self.session.execute(select(Device).where(Device.switch_id == db_switch.id))
+            existing_devices = existing_device_query.scalars().all()
+            existing_devices_by_mac = {device.mac: device for device in existing_devices}
 
-            if not existing_device:
-                new_device_entry = Device(
-                    workplace_number=None,
-                    port=new_device.port,
-                    mac=new_device.mac,
-                    vlan=new_device.vlan,
-                    ip_address=new_device.ip,
-                    status=True,
-                    update_time=datetime.now(timezone.utc),
-                    switch_id=switch.id,
-                )
-                self.session.add(new_device_entry)
+            for new_schema_device in switch_data.devices:
+                key = new_schema_device.mac
+                if key in existing_devices_by_mac:
+
+                    existing_device = existing_devices_by_mac[key]
+                    existing_device.port = new_schema_device.port
+                    existing_device.vlan = new_schema_device.vlan
+                    existing_device.ip = new_schema_device.ip
+                    existing_device.status = True
+                    existing_device.update_time = datetime.now(timezone.utc)
+                else:
+                    new_device_entry = Device(
+                        workplace_number=None,
+                        port=new_schema_device.port,
+                        mac=new_schema_device.mac,
+                        vlan=new_schema_device.vlan,
+                        ip_address=new_schema_device.ip,
+                        status=True,
+                        update_time=datetime.now(timezone.utc),
+                        switch_id=db_switch.id,
+                    )
+                    self.session.add(new_device_entry)
+
+            # Обновляем статус существующих устройств
+            for existing_device in existing_devices:
+                if existing_device.mac not in {device.mac for device in switch_data.devices}:
+                    existing_device.status = False
 
         await self.session.commit()
         return True
@@ -75,7 +80,7 @@ class CrudDevice(BaseCRUD):
         device = result.scalar_one_or_none()
 
         if device is None:
-            raise ValueError(f'Device {ip_address} not found')
+            raise ValueError(f"Device {ip_address} not found")
 
         for attr, value in schema.model_dump(exclude_none=True).items():
             setattr(device, attr, value)

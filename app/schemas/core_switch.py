@@ -26,7 +26,7 @@ class CoreSwitchCreate(CoreSwitchBase):
     @field_validator("snmp_oid")
     def validate_snmp_oid(cls, value: Optional[str]) -> str:
         if value is None:
-            return '1.3.6.1.2.1.4.22.1.2'
+            return "1.3.6.1.2.1.4.22.1.2"
         return validation_helper.validate_core_switch_oid(oid=value)
 
 

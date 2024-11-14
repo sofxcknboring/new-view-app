@@ -17,8 +17,8 @@ dep_crud_device = get_crud(CrudDevice)
 
 @router.get("/", response_model=List[DeviceRead])
 async def get_devices(
-        crud: CrudDevice = Depends(dep_crud_device),
-        queries: DeviceQuery = Depends()) -> Sequence[Device]:
+    crud: CrudDevice = Depends(dep_crud_device), queries: DeviceQuery = Depends()
+) -> Sequence[Device]:
     """
     В разработке, возможны ошибки.\n
     Returns:\n
@@ -39,8 +39,7 @@ async def get_devices(
 
 @router.post("/change/{ip_address}", response_model=DeviceRead)
 async def change_workplace_name_by_ip_address(
-    ip_address,
-    device_update: DeviceUpdate, crud: CrudDevice = Depends(dep_crud_device)
+    ip_address, device_update: DeviceUpdate, crud: CrudDevice = Depends(dep_crud_device)
 ) -> DeviceRead:
     """
     В разработке возможны ошибки.\n

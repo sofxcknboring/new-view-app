@@ -4,19 +4,19 @@ import winrm
 
 
 def get_win_user(ip_address: str) -> Optional[str]:
-    command = f'quser /server:{ip_address}'
+    command = f"quser /server:{ip_address}"
 
-    hostname = f'http://{ip_address}:5985/wsman'
-    username = f'NCC\\{settings.winrm.username}'
+    hostname = f"http://{ip_address}:5985/wsman"
+    username = f"NCC\\{settings.winrm.username}"
     password = settings.winrm.password
 
-    session = winrm.Session(hostname, auth=(username, password), transport='ntlm')
+    session = winrm.Session(hostname, auth=(username, password), transport="ntlm")
 
     result = session.run_cmd(command)
 
     decoded_res = result.std_out.decode()
 
-    active_user = ''
+    active_user = ""
 
     for line in decoded_res.splitlines():
         if "USERNAME" in line or not line.strip():

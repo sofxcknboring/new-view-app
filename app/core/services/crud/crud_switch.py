@@ -1,7 +1,7 @@
 from typing import Dict, List, Sequence
 
 from core.models import CoreSwitch, ExcludedPort, Switch, SwitchExcludedPort
-from schemas.switch import SwitchCreate, SwitchUpdate, SwitchReadQuery, SwitchRead, SwitchIpAddress
+from schemas.switch import SwitchCreate, SwitchUpdate, SwitchReadQuery
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -101,10 +101,12 @@ class CrudSwitch(BaseCRUD):
         for switch in switches:
             switch_info = {
                 "id": switch.id,
+                "comment": switch.comment,
                 "ip_address": switch.ip_address,
                 "snmp_oid": switch.snmp_oid,
                 "core_switch_ip": switch.core_switch_ip,
-                "excluded_ports": switch.excluded_ports_relation
+                "devices_count": len(switch.devices),
+                "excluded_ports": switch.excluded_ports_relation,
             }
             switch_data.append(switch_info)
 
@@ -115,7 +117,9 @@ class CrudSwitch(BaseCRUD):
         result = await self.session.execute(stmt)
         switch = result.scalar_one_or_none()
 
-        if switch is None:
+        if switch is not None:
+            switch.ip_address = schema.ip_address
+        else:
             raise ValueError(f"Switch: {ip_address} not found")
 
         if schema.comment is not None:
@@ -166,7 +170,7 @@ class CrudSwitch(BaseCRUD):
         switch = result.scalar_one_or_none()
 
         if switch is None:
-            raise ValueError(f'Switch {schema} not found')
+            raise ValueError(f"Switch {schema} not found")
 
         for excluded_port in switch.excluded_ports_relation:
             await self.session.delete(excluded_port)

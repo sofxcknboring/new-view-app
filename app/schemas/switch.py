@@ -63,6 +63,14 @@ class SwitchRead(SwitchBase):
     excluded_ports: List[int]
 
 
+class SwitchConfRead(SwitchBase):
+    ip_address: str
+    snmp_oid: str
+    core_switch_ip: str
+    excluded_ports: List[int]
+    devices_count: int
+
+
 class SwitchReadForCore(SwitchBase):
     ip_address: str
     snmp_oid: str

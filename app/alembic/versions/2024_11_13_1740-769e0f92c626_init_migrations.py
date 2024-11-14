@@ -1,18 +1,19 @@
-"""init
+"""init_migrations
 
-Revision ID: 24f2d1eca0e9
+Revision ID: 769e0f92c626
 Revises: 
-Create Date: 2024-10-28 15:00:17.775123
+Create Date: 2024-11-13 17:40:33.441804
 
 """
 
 from typing import Sequence, Union
 
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
+
 
 # revision identifiers, used by Alembic.
-revision: str = "24f2d1eca0e9"
+revision: str = "769e0f92c626"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -73,6 +74,7 @@ def upgrade() -> None:
             ["switches.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("mac"),
         sa.UniqueConstraint("workplace_number"),
     )
     op.create_table(
