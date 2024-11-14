@@ -1,10 +1,15 @@
 import asyncio
+import logging
 from typing import Any, Dict, List, Tuple
 
 from core.config import settings
 from core.services.snmp.snmp_base import SnmpBase
 from core.services.snmp.snmp_formatters import CoreSwitchFormatter
 from pysnmp.hlapi.asyncio import *
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class SnmpV3(SnmpBase):
@@ -91,16 +96,24 @@ class SnmpV3(SnmpBase):
         return combined_results
 
     async def get_arp_table(self, ip_address: str, snmp_oid: str) -> Dict[Any, Any]:
+
+        logger.info("Run SNMPv3 -> Core switch IP: %s (OID: %s)", ip_address, snmp_oid)
+
         current_oid = snmp_oid
         result = {ip_address: []}
 
         while current_oid.startswith(snmp_oid):
-            snmp_response = self.get_snmp_response(ip_address=ip_address, snmp_oid=current_oid)
+            try:
+                snmp_response = self.get_snmp_response(ip_address=ip_address, snmp_oid=current_oid)
 
-            formatted_response = CoreSwitchFormatter(*await snmp_response, start_oid=snmp_oid)
+                formatted_response = CoreSwitchFormatter(*await snmp_response, start_oid=snmp_oid)
 
-            formatted_result, current_oid = formatted_response.get_vlan_mac_ip(ip_address=ip_address)
+                formatted_result, current_oid = formatted_response.get_vlan_mac_ip(ip_address=ip_address)
 
-            result[ip_address].extend(formatted_result[ip_address])
+                result[ip_address].extend(formatted_result[ip_address])
+            except Exception as e:
+                logger.error("SnmpV3(method: get_arp_table() -> IP: (%s) - Error: %s", ip_address, e)
+                break
 
+        logger.info("SnmpV3(method: get_arp_table() -> Completed for IP: %s", ip_address)
         return result

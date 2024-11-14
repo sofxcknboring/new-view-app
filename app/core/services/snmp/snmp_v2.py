@@ -1,10 +1,19 @@
 import asyncio
+import logging
 from typing import Any, Dict, List, Optional, Tuple
 
 from core.config import settings
 from core.services.snmp.snmp_base import SnmpBase
 from core.services.snmp.snmp_formatters import SwitchFormatter
 from pysnmp.hlapi.asyncio import *
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt="'%Y-%m-%d %H:%M:%S'"
+)
+logger = logging.getLogger(__name__)
 
 
 class SnmpV2(SnmpBase):
@@ -109,19 +118,24 @@ class SnmpV2(SnmpBase):
         Raises:
             Exception: Может выбросить исключение, если возникла ошибка при получении SNMP-ответа.
         """
+        logger.info("Run SNMPv2 -> switch IP: %s (OID: %s)", ip_address, snmp_oid)
         current_oid = snmp_oid
         result = []
 
         while current_oid.startswith(snmp_oid):
-            snmp_response = self.get_snmp_response(ip_address=ip_address, snmp_oid=current_oid)
+            try:
+                snmp_response = self.get_snmp_response(ip_address=ip_address, snmp_oid=current_oid)
 
-            formatted_response = SwitchFormatter(*await snmp_response, start_oid=snmp_oid)
+                formatted_response = SwitchFormatter(*await snmp_response, start_oid=snmp_oid)
 
-            formatted_result, current_oid = formatted_response.get_vlan_mac_port(
-                ip_address=ip_address, excluded_ports=excluded_ports
-            )
-            if formatted_result:
-                result.append(formatted_result)
-            continue
-
+                formatted_result, current_oid = formatted_response.get_vlan_mac_port(
+                    ip_address=ip_address, excluded_ports=excluded_ports
+                )
+                if formatted_result:
+                    result.append(formatted_result)
+                continue
+            except Exception as e:
+                logger.error("SnmpV2(method: get_switch_ports() -> IP: (%s) - Error: %s", ip_address, e)
+                break
+        logger.info("Completed for IP: %s", ip_address)
         return result

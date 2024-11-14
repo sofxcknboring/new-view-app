@@ -1,5 +1,3 @@
-import asyncio
-
 from core.models import db_helper
 from core.services.crud.crud_core_sw import CrudCoreSwitch
 from core.services.crud.crud_device import CrudDevice
@@ -7,7 +5,7 @@ from core.services.snmp import SnmpResponseMerger, SnmpV2, SnmpV3
 from schemas.device import DevicesSnmpResponse
 
 
-async def add_snmp_db():
+async def add_snmp_to_data_base() -> bool:
 
     async with db_helper.session_factory() as session:
         # Create Session
@@ -20,10 +18,6 @@ async def add_snmp_db():
             target_core_switch = [{"ip_address": core["core_switch_ip"], "snmp_oid": core["oid"]}]
 
             target_switches = [*core["switches"]]
-            print(target_core_switch)
-            print(type(target_core_switch))
-            print(target_switches)
-            print(type(target_switches))
 
             switch_walker = SnmpV2(target_switches=target_switches)
             switch_snmp_response = await switch_walker.walk_all("get_switch_ports")
@@ -37,7 +31,6 @@ async def add_snmp_db():
             device_data_list = DevicesSnmpResponse(switches=merged_result)
 
             await devices.create(device_data_list)
-            print(f"{core_switch_ip} added")
 
+        return True
 
-asyncio.run(add_snmp_db())
