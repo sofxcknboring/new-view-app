@@ -53,6 +53,7 @@ async def get_switches_configures(
             core_switch_ip=switch["core_switch_ip"],
             devices_count=switch["devices_count"],
             excluded_ports=[ep.excluded_port.port_number for ep in switch["excluded_ports"]],
+            location_name=switch["location_name"],
         )
         switch_data.append(switch_info)
 
@@ -116,6 +117,7 @@ async def update_switch(
 @router.post("/delete/{ip_address}", response_model=SwitchResponse)
 async def delete_switch(ip_address: str, crud: CrudSwitch = Depends(dep_crud_switch)) -> SwitchResponse:
     """
+    Удаляет устройства подвязанные к коммутатору и коммутатор.
     Returns:\n
         200: SwitchResponse: Информация об удаленном коммутаторе.
 

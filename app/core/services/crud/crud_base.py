@@ -18,7 +18,7 @@ class BaseCRUD(ABC):
         pass
 
     @abstractmethod
-    async def update(self, schema, ip_address: SwitchIpAddress = None):
+    async def update(self, schema, query=None):
         pass
 
     @abstractmethod

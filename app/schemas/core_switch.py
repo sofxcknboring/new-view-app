@@ -7,13 +7,14 @@ from .validation_helper import validation_helper
 
 
 class CoreSwitchBase(BaseModel):
-    name: Optional[str] = Field(None, max_length=50)
+    comment: Optional[str] = Field(None, max_length=50)
 
     class Config:
         from_attributes = True
 
 
 class CoreSwitchCreate(CoreSwitchBase):
+    prefix: str
     ip_address: Optional[str] = Field(None)
     snmp_oid: Optional[str] = Field("1.3.6.1.2.1.4.22.1.2")
 
@@ -41,6 +42,11 @@ class CoreSwitchResponse(CoreSwitchBase):
 
 
 class CoreSwitchRead(CoreSwitchBase):
+    location_name: str
     ip_address: str
     snmp_oid: str
     switches: Optional[List[SwitchReadForCore]] = []
+
+
+class CoreSwitchDelete(BaseModel):
+    ip_address: str

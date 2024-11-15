@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, List
 
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
@@ -7,7 +7,8 @@ from core.models import CoreSwitch
 from core.services.crud.crud_core_sw import CrudCoreSwitch
 from core.services.crud.helpers import get_crud
 from fastapi import APIRouter, Depends, HTTPException
-from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchRead, CoreSwitchUpdate, CoreSwitchResponse
+from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchRead, CoreSwitchUpdate, CoreSwitchResponse, \
+    CoreSwitchDelete
 
 router = APIRouter(tags=["CoreSwitch"])
 
@@ -15,7 +16,7 @@ dep_crud_core_switch = get_crud(CrudCoreSwitch)
 
 
 @router.get("/all", response_model=list[CoreSwitchRead])
-async def get_core_switches(crud: CrudCoreSwitch = Depends(dep_crud_core_switch)) -> Sequence[CoreSwitch]:
+async def get_core_switches(crud: CrudCoreSwitch = Depends(dep_crud_core_switch)) -> List[CoreSwitchRead]:
     """
     В разработке, возможны ошибки.\n
     Returns:\n
@@ -41,7 +42,8 @@ async def create_core_switch(
     Examples:\n
     ```json
     {
-      "name": "name",
+      "prefix": "Префикс Location,
+      "comment": "Комментарий",
       "ip_address": "192.168.1.1",
       "snmp_oid": "1.3.6.1.2.1.4.22.1.2"(по умолчанию)
     }
@@ -64,10 +66,6 @@ async def create_core_switch(
             raise HTTPException(
                 status_code=409,
                 detail=f"Ошибка: IP-адрес {core_switch_create.ip_address} уже существует в базе данных.",
-            ) from e
-        elif "ix_core_switches_name" in str(e.orig):
-            raise HTTPException(
-                status_code=409, detail=f"Ошибка: Имя {core_switch_create.name} уже существует в базе данных."
             ) from e
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=e.errors())
@@ -115,11 +113,11 @@ async def update_core_switch(
 
 @router.post("/delete", response_model=CoreSwitchResponse)
 async def delete_core_switch(
-    core_switch_base: CoreSwitchBase, crud: CrudCoreSwitch = Depends(dep_crud_core_switch)
+    core_switch_delete: CoreSwitchDelete, crud: CrudCoreSwitch = Depends(dep_crud_core_switch)
 ) -> CoreSwitchResponse:
     """
     В разработке, возможны ошибки.\n
-    Удалить опорный коммутатор.
+    Удалить опорный коммутатор по ip-адресу.
     Returns:\n
         200: CoreSwitchResponse: Информация об удаленном опорном коммутаторе.
 
@@ -130,7 +128,7 @@ async def delete_core_switch(
         500: Иная ошибка на стороне сервера.
     """
     try:
-        deleted_core_switch = await crud.delete(schema=core_switch_base)
+        deleted_core_switch = await crud.delete(schema=core_switch_delete)
         response = CoreSwitchResponse.from_orm(deleted_core_switch)
         return response
     except ValidationError as e:

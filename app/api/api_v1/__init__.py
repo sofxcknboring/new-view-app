@@ -6,6 +6,7 @@ from .device_route import router as device_router
 from .snmp_control import router as snmp_control_router
 from .switch_route import router as switch_router
 from .device_control import router as device_control_router
+from .location_route import router as location_router
 
 router = APIRouter(
     prefix=settings.api.v1.prefix,
@@ -15,3 +16,4 @@ router.include_router(switch_router, prefix=settings.api.v1.switches)
 router.include_router(device_router, prefix=settings.api.v1.devices)
 router.include_router(snmp_control_router, prefix=settings.api.v1.snmp_control)
 router.include_router(device_control_router, prefix=settings.api.v1.device_control)
+router.include_router(location_router, prefix=settings.api.v1.locations)

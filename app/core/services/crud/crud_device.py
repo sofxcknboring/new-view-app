@@ -82,7 +82,16 @@ class CrudDevice(BaseCRUD):
         if device is None:
             raise ValueError(f"Device {ip_address} not found")
 
+        switch = device.switch
+
+        if switch and switch.location:
+            location_prefix = switch.location.prefix
+        else:
+            location_prefix = ""
+
         for attr, value in schema.model_dump(exclude_none=True).items():
+            if attr == "workplace_number" and value is not None:
+                value = f"{location_prefix}-{value}"
             setattr(device, attr, value)
 
         await self.session.commit()

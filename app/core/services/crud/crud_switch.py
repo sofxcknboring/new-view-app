@@ -1,6 +1,6 @@
 from typing import Dict, List, Sequence
 
-from core.models import CoreSwitch, ExcludedPort, Switch, SwitchExcludedPort
+from core.models import CoreSwitch, ExcludedPort, Switch, SwitchExcludedPort, Location
 from schemas.switch import SwitchCreate, SwitchUpdate, SwitchReadQuery
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -33,6 +33,7 @@ class CrudSwitch(BaseCRUD):
             snmp_oid=schema.snmp_oid,
             core_switch_ip=schema.core_switch_ip,
             core_switch=core_switch,
+            location_id=core_switch.location_id,
         )
 
         self.session.add(switch)
@@ -93,7 +94,10 @@ class CrudSwitch(BaseCRUD):
         return switches_result
 
     async def get_switches_configures(self) -> List[Dict]:
-        stmt = select(Switch).options(selectinload(Switch.excluded_ports_relation))
+        stmt = select(Switch).options(
+            selectinload(Switch.excluded_ports_relation),
+            selectinload(Switch.location)
+        )
 
         switches = await self.session.execute(stmt)
         switches = switches.scalars().all()
@@ -107,6 +111,7 @@ class CrudSwitch(BaseCRUD):
                 "core_switch_ip": switch.core_switch_ip,
                 "devices_count": len(switch.devices),
                 "excluded_ports": switch.excluded_ports_relation,
+                "location_name": switch.location.name,
             }
             switch_data.append(switch_info)
 
@@ -175,27 +180,9 @@ class CrudSwitch(BaseCRUD):
         for excluded_port in switch.excluded_ports_relation:
             await self.session.delete(excluded_port)
 
+        for device in switch.devices:
+            await self.session.delete(device)
         await self.session.delete(switch)
         await self.session.commit()
         return switch
 
-    async def get_snmp_params(self) -> List[Dict]:
-        """
-        Возвращает список с параметрами для запроса к SNMP-агенту.
-        Returns:
-            [
-                {
-                    'ip_address': 192.168.0.1,
-                    'snmp_oid': '1.3.6......',
-                    'excluded_ports': [1,2,3,4,5,6,....]
-                }
-            ]
-        """
-        result = await self.session.execute(select(Switch).options(selectinload(Switch.excluded_ports_relation)))
-        switches_data = []
-        for switch in result.scalars().all():
-            excluded_ports = [port.excluded_port.port_number for port in switch.excluded_ports_relation]
-            switches_data.append(
-                {"ip_address": switch.ip_address, "snmp_oid": switch.snmp_oid, "excluded_ports": excluded_ports}
-            )
-        return switches_data
