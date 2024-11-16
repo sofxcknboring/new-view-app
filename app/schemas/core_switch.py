@@ -43,6 +43,7 @@ class CoreSwitchResponse(CoreSwitchBase):
 
 class CoreSwitchRead(CoreSwitchBase):
     location_name: str
+    location_prefix: str
     ip_address: str
     snmp_oid: str
     switches: Optional[List[SwitchReadForCore]] = []
