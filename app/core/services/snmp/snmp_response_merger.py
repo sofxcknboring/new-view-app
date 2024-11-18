@@ -10,9 +10,7 @@ class SnmpResponseMerger:
 
     def merge_switches(self):
         """
-        КОСТЫЛЬ переделать
         Returns:
-
         """
         core_switch_ip = next(iter(self.core_switch_data.keys()))
 

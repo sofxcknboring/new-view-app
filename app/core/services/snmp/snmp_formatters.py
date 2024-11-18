@@ -92,3 +92,23 @@ class CoreSwitchFormatter(SnmpResultFormatter):
             formatted_result[ip_address].append(var_bind_data)
 
         return formatted_result, current_oid
+
+
+
+class SampleFormatResponse(SnmpResultFormatter):
+
+    def __init__(self, errorIndication: Any, errorStatus: Any, errorIndex: Any, varBinds: List[Tuple], start_oid: str):
+        super().__init__(errorIndication, errorStatus, errorIndex, varBinds, start_oid)
+
+    def get_var_binds(self):
+        current_oid = None
+
+        self.find_exceptions()
+
+
+        for var_bind in self.var_binds:
+            print(var_bind)
+            current_oid = str(var_bind[0])
+            if not current_oid.startswith(self.start_oid):
+                break
+        return current_oid

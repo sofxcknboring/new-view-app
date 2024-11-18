@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from core.config import settings
 from core.services.snmp.snmp_base import SnmpBase
-from core.services.snmp.snmp_formatters import SwitchFormatter
+from core.services.snmp.snmp_formatters import SwitchFormatter, SampleFormatResponse
 from pysnmp.hlapi.asyncio import *
 
 
@@ -28,11 +28,14 @@ class SnmpV2(SnmpBase):
         target_switches: List[Dict[str, Any]
 
     Examples:
-        {
-            "ip_address": "IP-адрес коммутатора". - '192.168.1.1'
-            "snmp_oid": "OID для обхода" - '1.3.6.1.....'
-            "excluded_ports": [1, 2, 3, 4,...] Список портов для исключения.
-        }
+        [
+            {
+                "ip_address": "192.168.1.1"
+                "snmp_oid": "1.3.6.1....."
+                "excluded_ports": [1, 2, 3, 4,...] Список портов для исключения.
+            },
+            {...},
+        ]
     """
 
     def __init__(
@@ -139,3 +142,19 @@ class SnmpV2(SnmpBase):
                 break
         logger.info("Completed for IP: %s", ip_address)
         return result
+
+
+    async def get_info(self, ip_address: str, snmp_oid: str):
+
+        current_oid = snmp_oid
+
+        while current_oid.startswith(snmp_oid):
+            try:
+                snmp_response = self.get_snmp_response(ip_address=ip_address, snmp_oid=current_oid)
+                form_resp = SampleFormatResponse(*await snmp_response, start_oid=snmp_oid)
+
+
+                current_oid = form_resp.get_var_binds()
+
+            except Exception:
+                break

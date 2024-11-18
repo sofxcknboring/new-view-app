@@ -6,6 +6,13 @@ from pysnmp.error import PySnmpError
 
 class SnmpBase(ABC):
 
+    """
+    Внедрение зависимостей.
+    """
+    #def __init__(self, formatter: type[SnmpResultFormatter]):
+    #    self.__formatter = formatter
+
+
     @abstractmethod
     async def get_snmp_response(self, target_ip, current_oid):
         """

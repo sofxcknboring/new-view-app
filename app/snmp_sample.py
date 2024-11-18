@@ -1,3 +1,5 @@
+import asyncio
+
 from core.models import db_helper
 from core.services.crud.crud_core_sw import CrudCoreSwitch
 from core.services.crud.crud_device import CrudDevice
@@ -34,3 +36,19 @@ async def add_snmp_to_data_base() -> bool:
 
         return True
 
+
+
+
+
+async def get_tr_prts():
+
+    switch = [{
+            # "ip_address": '10.254.244.6',
+            # "snmp_oid": "1.3.6.1.2.1.17.7.1.4.5.1.1",
+            # "excluded_ports": []
+    }]
+
+    switch_walker = SnmpV2(target_switches=switch)
+    await switch_walker.get_info('10.254.243.5', "1.3.6.1.2.1.17.7.1.4.5.1.1")
+
+#asyncio.run(get_tr_prts())
