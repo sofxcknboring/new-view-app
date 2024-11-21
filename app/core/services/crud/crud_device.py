@@ -57,7 +57,6 @@ class CrudDevice(BaseCRUD):
                     )
                     self.session.add(new_device_entry)
 
-            # Обновляем статус существующих устройств
             for existing_device in existing_devices:
                 if existing_device.mac not in {device.mac for device in switch_data.devices}:
                     existing_device.status = False

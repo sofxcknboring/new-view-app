@@ -45,7 +45,11 @@ class CrudCoreSwitch(BaseCRUD):
                 location_name=switch.location.name,
                 location_prefix=switch.location.prefix,
                 switches=[
-                   SwitchReadForCore(comment=s.comment, ip_address=s.ip_address, snmp_oid=s.snmp_oid) for s in switch.switches
+                   SwitchReadForCore(
+                       comment=s.comment,
+                       ip_address=s.ip_address,
+                       snmp_oid=s.snmp_oid
+                   ) for s in switch.switches
                 ]
             )
             for switch in core_switches
