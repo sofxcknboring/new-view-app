@@ -10,19 +10,25 @@ class SwitchFormatter(SnmpResultFormatter):
     def __init__(self, errorIndication: Any, errorStatus: Any, errorIndex: Any, varBinds: List[Tuple], start_oid: str):
         super().__init__(errorIndication, errorStatus, errorIndex, varBinds, start_oid)
 
+    def format_info(self):
+
+        current_oid = None
+        self.find_exceptions()
+
+        for var_bind in self.var_binds:
+            vlan = int(var_bind[1].prettyPrint()) if var_bind else None
+
+            current_oid = str(var_bind[0])
+
+            if not current_oid.startswith(self.start_oid):
+                break
+            if vlan != 1:
+                return int(var_bind[0][-1]), current_oid
+            else:
+                return None, current_oid
+        return None, current_oid
+
     def get_vlan_mac_port(self, ip_address, excluded_ports: Optional[List[int]]) -> Tuple[Dict, str]:
-        """
-        Извлекает информацию о VLAN, MAC-адресах и портах для заданного IP-адреса коммутатора.
-
-        Args:
-            ip_address (str): IP-адрес коммутатора, для которого извлекается информация.
-            excluded_ports (Optional[List[int]]): Список портов, которые следует исключить из результатов.
-
-        Returns:
-            Tuple[Dict, str]: Кортеж, содержащий словарь с информацией о VLAN, MAC-адресе и порте,
-                              а также текущий OID, если он был найден.
-
-        """
         current_oid = None
         formatted_result = None
 
@@ -54,17 +60,10 @@ class CoreSwitchFormatter(SnmpResultFormatter):
     def __init__(self, errorIndication: Any, errorStatus: Any, errorIndex: Any, varBinds: List[Tuple], start_oid: str):
         super().__init__(errorIndication, errorStatus, errorIndex, varBinds, start_oid)
 
+
+    def format_info(self):
+        pass
     def get_vlan_mac_ip(self, ip_address: str) -> Tuple[Dict, str]:
-        """
-        Извлекает информацию о VLAN, MAC-адресах и IP для заданного IP-адреса коммутатора.
-
-        Args:
-            ip_address (str): IP-адрес опорного коммутатора, для которого извлекается информация.
-
-        Returns:
-            Tuple[Dict, str]: Кортеж, содержащий словарь с информацией о VLAN, MAC-адресе и IP,
-                              а также текущий OID, если он был найден.
-        """
         current_oid = None
         formatted_result = {ip_address: []}
 
@@ -92,23 +91,3 @@ class CoreSwitchFormatter(SnmpResultFormatter):
             formatted_result[ip_address].append(var_bind_data)
 
         return formatted_result, current_oid
-
-
-
-class SampleFormatResponse(SnmpResultFormatter):
-
-    def __init__(self, errorIndication: Any, errorStatus: Any, errorIndex: Any, varBinds: List[Tuple], start_oid: str):
-        super().__init__(errorIndication, errorStatus, errorIndex, varBinds, start_oid)
-
-    def get_var_binds(self):
-        current_oid = None
-
-        self.find_exceptions()
-
-
-        for var_bind in self.var_binds:
-            print(var_bind)
-            current_oid = str(var_bind[0])
-            if not current_oid.startswith(self.start_oid):
-                break
-        return current_oid
