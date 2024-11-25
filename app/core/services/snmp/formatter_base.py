@@ -27,7 +27,19 @@ class SnmpResultFormatter(ABC):
         return True
 
     @abstractmethod
-    def format_info(self):
+    def format_sys_descr(self):
+        pass
+
+    @abstractmethod
+    def format_port_vlan_table(self):
+        pass
+
+    @abstractmethod
+    def format_vlan_mac_port_mapping(self, ip_address, ports):
+        pass
+
+    @abstractmethod
+    def format_arp_table(self, ip_address):
         pass
 
     def dis_branch_oid(self, oid: str):
