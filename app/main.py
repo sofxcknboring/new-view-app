@@ -119,6 +119,25 @@ Net-View API. 🚀
 - Отключено логирование запросов к базе данных.
 
 </details>
+<details>
+<summary>🌈ChangeLog🌈 [1.0.1] - 23.11.2024</summary>
+<h2>CoreSwitch</h2>
+<ul>
+    <li><strong>/api/v1/core_switches/create</strong> - Проверяет доступность SNMP-агента. Если недоступен -> 500(snmp timeout)</li>
+    <li><strong>/api/v1/core_switches/create</strong> - Добавляет в поле "comment" название устройства. (<em>"comment"</em>)</li>
+    <li><strong>/api/v1/core_switches/create</strong> - Не запрашивает oid</li>
+</ul>
+
+<h2>Switch</h2>
+- Изменилось поле в таблице, excluded_ports_relation -> ports_relation
+- Изменилось имя таблицы excluded_ports -> ports
+<ul>
+    <li><strong>/api/v1/switches/create</strong> - Проверяет доступность SNMP-агента. Если недоступен -> 500(snmp timeout)</li>
+    <li><strong>/api/v1/switches/create</strong> - Закрепляет не trunk-порты за коммутатором автоматически, отправляя запрос к SNMP-агенту. -> 500(snmp timeout)(<em>"ports"</em>)</li>
+    <li><strong>/api/v1/switches/create</strong> - Добавляет в поле "comment" название устройства. (<em>"comment"</em>)</li>
+    <li><strong>/api/v1/switches/create</strong> - Не запрашивает oid.(<em>"snmp_oid"</em>)</li>
+    <li><strong>/api/v1/switches/create</strong> - Не запрашивает порты.(<em>"ports"</em>)</li>
+</details>
 """
 
 
@@ -164,7 +183,7 @@ if __name__ == "__main__":
         "main:main_app",
         host=settings.run.host,
         port=settings.run.port,
-        reload=True,
-        #workers=4,
+        reload=False,
+        workers=4,
         log_config="log_conf.yaml"
     )

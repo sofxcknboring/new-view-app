@@ -7,6 +7,8 @@ from sqlalchemy.orm import selectinload
 
 from schemas.switch import SwitchReadForCore
 from .crud_base import BaseCRUD
+from ..snmp import SnmpV3
+from ..snmp.snmp_formatters import CoreSwitchFormatter
 
 
 class CrudCoreSwitch(BaseCRUD):
@@ -15,17 +17,23 @@ class CrudCoreSwitch(BaseCRUD):
     """
 
     async def create(self, schema: CoreSwitchCreate) -> CoreSwitch:
-        stmt = select(Location).where(Location.prefix == schema.prefix)
-        result = await self.session.execute(stmt)
-        location = result.scalar_one_or_none()
-        if not location:
-            raise ValueError("Location with this name does not exist.")
+        try:
+            core_switch_walker = SnmpV3(format_class=CoreSwitchFormatter)
+            core_switch_name = await core_switch_walker.get_sys_descr(schema.ip_address)
+        except Exception:
+            raise
+        else:
+            stmt = select(Location).where(Location.prefix == schema.prefix)
+            result = await self.session.execute(stmt)
+            location = result.scalar_one_or_none()
+            if not location:
+                raise ValueError("Location with this name does not exist.")
 
-        core_switch = CoreSwitch(**schema.model_dump(exclude={'prefix'}), location_id=location.id)
-        self.session.add(core_switch)
-        await self.session.commit()
-        await self.session.refresh(core_switch)
-        return core_switch
+            core_switch = CoreSwitch(**schema.model_dump(exclude={'prefix'}), location_id=location.id, comment=core_switch_name)
+            self.session.add(core_switch)
+            await self.session.commit()
+            await self.session.refresh(core_switch)
+            return core_switch
 
     async def read(self, schema=CoreSwitchRead) -> List[CoreSwitchRead]:
         stmt = (
@@ -56,13 +64,26 @@ class CrudCoreSwitch(BaseCRUD):
         ]
 
     async def update(self, schema: CoreSwitchUpdate, ip_address=None) -> CoreSwitch:
-        stmt = select(CoreSwitch).where(CoreSwitch.ip_address == ip_address)
+        stmt = (
+            select(CoreSwitch, Location)
+            .outerjoin(Location, Location.prefix == schema.prefix)
+            .where(CoreSwitch.ip_address == ip_address)
+        )
         result = await self.session.execute(stmt)
-        core_switch = result.scalar_one_or_none()
+        core_switch, location = result.one_or_none()
+
         if core_switch is None:
             raise ValueError(f"Device: {ip_address} not found")
-        for attr, value in schema.model_dump(exclude_none=True).items():
+
+        if schema.prefix and location is None:
+            raise ValueError(f'Location with prefix: {schema.prefix} not found')
+
+        if location:
+            core_switch.location_id = location.id
+
+        for attr, value in schema.model_dump(exclude_none=True, exclude={'prefix'}).items():
             setattr(core_switch, attr, value)
+
         await self.session.commit()
         return core_switch
 
@@ -79,7 +100,7 @@ class CrudCoreSwitch(BaseCRUD):
         related_records = related_records_result.scalars().all()
 
         if related_records:
-            raise ValueError(f"Невозможно удалить устройство: {schema.comment} связано с другими записями.")
+            raise ValueError(f"Невозможно удалить устройство: {schema.ip_address} связано с другими записями.")
 
         await self.session.delete(core_switch)
         await self.session.commit()
@@ -89,7 +110,7 @@ class CrudCoreSwitch(BaseCRUD):
         """ """
         stmt = (
             select(CoreSwitch)
-            .options(selectinload(CoreSwitch.switches).selectinload(Switch.excluded_ports_relation))
+            .options(selectinload(CoreSwitch.switches).selectinload(Switch.ports_relation))
             .order_by(CoreSwitch.id)
         )
 
@@ -102,10 +123,10 @@ class CrudCoreSwitch(BaseCRUD):
             core_data = {"core_switch_ip": core.ip_address, "oid": core.snmp_oid, "switches": []}
             for switch in core.switches:
                 switch_data = {
-                    "ip_address": switch.ip_address,
+                    "target_ip": switch.ip_address,
                     "snmp_oid": switch.snmp_oid,
-                    "excluded_ports": [
-                        excluded_port.excluded_port.port_number for excluded_port in switch.excluded_ports_relation
+                    "ports": [
+                        port.port.port_number for port in switch.ports_relation
                     ],
                 }
                 core_data["switches"].append(switch_data)
