@@ -8,7 +8,6 @@ from fastapi import Query
 
 
 class SwitchBase(BaseModel):
-    comment: Optional[str] = Field(None, max_length=50)
 
     class Config:
         from_attributes = True
@@ -25,15 +24,17 @@ class SwitchIpAddress(BaseModel):
 
 class SwitchCreate(SwitchBase):
     ip_address: str = Field(None)
-    snmp_oid: Optional[str] = Field("1.3.6.1.2.1.17.7.1.2.2.1.2")
     core_switch_ip: str = Field(None)
-    excluded_ports_relation: Optional[List[int]] = Field([23, 24, 25, 26, 27, 28, 29, 30, 105, 209, 1000])
 
     @field_validator("ip_address", "core_switch_ip")
     def validate_ip_address(cls, ip_address):
         ip_address = validation_helper.validate_ip_address(ip_address)
         return ip_address
 
+
+class SwitchUpdate(SwitchCreate):
+    snmp_oid: Optional[str] = Field('1.3.6.1.2.1.17.7.1.2.2.1.2')
+    comment: Optional[str] = Field(None, max_length=100)
     @field_validator("snmp_oid")
     def validate_snmp_oid(cls, oid):
         if oid is None:
@@ -41,26 +42,23 @@ class SwitchCreate(SwitchBase):
         return validation_helper.validate_switch_oid(oid=oid)
 
 
-class SwitchUpdate(SwitchCreate):
-    pass
-
-
-class ExcludedPortBase(BaseModel):
+class PortBase(BaseModel):
     id: int
     port_number: int
     comment: Optional[str] = None
 
 
-class SwitchExcludedPortBase(BaseModel):
+class SwitchPortBase(BaseModel):
     switch_id: int
-    excluded_port: ExcludedPortBase
+    port: PortBase
 
 
 class SwitchRead(SwitchBase):
     ip_address: str
     snmp_oid: str
     core_switch_ip: str
-    excluded_ports: List[int]
+    comment: Optional[str] = Field(None, max_length=100)
+    ports: List[int]
 
 
 class SwitchConfRead(SwitchBase):
@@ -68,18 +66,21 @@ class SwitchConfRead(SwitchBase):
     location_name: str
     snmp_oid: str
     core_switch_ip: str
-    excluded_ports: List[int]
+    comment: Optional[str] = Field(None, max_length=100)
+    ports: List[int]
     devices_count: int
 
 
 class SwitchReadForCore(SwitchBase):
     ip_address: str
     snmp_oid: str
+    comment: Optional[str] = Field(None, max_length=100)
 
 
 class SwitchResponse(SwitchBase):
     ip_address: str
     core_switch_ip: str
+    comment: Optional[str] = Field(None, max_length=100)
     devices: Optional[List[DeviceResponse]] = []
 
 
