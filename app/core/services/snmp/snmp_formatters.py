@@ -10,8 +10,21 @@ class SwitchFormatter(SnmpResultFormatter):
     def __init__(self, errorIndication: Any, errorStatus: Any, errorIndex: Any, varBinds: List[Tuple], start_oid: str):
         super().__init__(errorIndication, errorStatus, errorIndex, varBinds, start_oid)
 
-    def format_info(self):
+    def format_sys_descr(self):
+        self.find_exceptions()
 
+        for var_bind in self.var_binds:
+            value = var_bind[1]
+            bytes_value = value.asOctets()
+            decoded_value = bytes_value.decode('utf-8', errors='ignore')
+            device_name = decoded_value.split(',')[:1]
+            return ",".join(device_name)
+
+    def format_port_vlan_table(self) -> Tuple[Optional[int], str]:
+        """
+        Returns:
+            (port(int | None), current_oid: str)
+        """
         current_oid = None
         self.find_exceptions()
 
@@ -28,7 +41,7 @@ class SwitchFormatter(SnmpResultFormatter):
                 return None, current_oid
         return None, current_oid
 
-    def get_vlan_mac_port(self, ip_address, excluded_ports: Optional[List[int]]) -> Tuple[Dict, str]:
+    def format_vlan_mac_port_mapping(self, ip_address, ports: Optional[List[int]]) -> Tuple[Dict, str]:
         current_oid = None
         formatted_result = None
 
@@ -36,12 +49,13 @@ class SwitchFormatter(SnmpResultFormatter):
 
         for var_bind in self.var_binds:
             port = validation_helper.validate_port(var_bind[1].prettyPrint() if var_bind else None)
+
             current_oid = str(var_bind[0])
 
             if not current_oid.startswith(self.start_oid):
                 break
 
-            if port in excluded_ports:
+            if port not in ports:
                 break
 
             dis_branched_oid = self.dis_branch_oid(current_oid)
@@ -54,24 +68,41 @@ class SwitchFormatter(SnmpResultFormatter):
             formatted_result = var_bind_data
         return formatted_result, current_oid
 
+    async def format_arp_table(self, ip_address):
+        pass
+
 
 class CoreSwitchFormatter(SnmpResultFormatter):
 
     def __init__(self, errorIndication: Any, errorStatus: Any, errorIndex: Any, varBinds: List[Tuple], start_oid: str):
         super().__init__(errorIndication, errorStatus, errorIndex, varBinds, start_oid)
 
+    def format_sys_descr(self):
+        self.find_exceptions()
 
-    def format_info(self):
+        for var_bind in self.var_binds:
+            value = var_bind[1]
+            bytes_value = value.asOctets()
+            decoded_value = bytes_value.decode('utf-8', errors='ignore')
+            device_name = decoded_value.split(',')[:3]
+            return ",".join(device_name)
+
+    def format_port_vlan_table(self):
         pass
-    def get_vlan_mac_ip(self, ip_address: str) -> Tuple[Dict, str]:
+
+    def format_vlan_mac_port_mapping(self, ip_address, ports):
+        pass
+
+    def format_arp_table(self, ip_address: str) -> Tuple[Dict, str]:
         current_oid = None
         formatted_result = {ip_address: []}
 
         self.find_exceptions()
 
         for var_bind in self.var_binds:
-            mac = var_bind[1].prettyPrint() if var_bind else None
+            mac = var_bind[1].prettyPrint()
             current_oid = str(var_bind[0])
+
             if not current_oid.startswith(self.start_oid):
                 break
 

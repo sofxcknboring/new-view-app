@@ -1,4 +1,5 @@
 import logging
+from functools import wraps
 
 logging.basicConfig(
     level=logging.INFO,
@@ -9,12 +10,15 @@ logger = logging.getLogger(__name__)
 
 
 def snmp_logger(func):
+    @wraps(func)
     async def wrapper(*args, **kwargs):
-        logger.info(f"SNMPv2({func.__name__}) -> IP: %s (OID: %s)", *args)
+        logger.info(f"start ({func.__name__})")
         try:
             result = await func(*args, **kwargs)
+            logger.info(f"{func.__name__} completed successfully")
             return result
         except Exception as e:
-            logger.error(f"SnmpV2({func.__name__}) -> IP: %s - Error: %s", *args, e)
-
+            logger.error(f"{func.__name__}) Error: {str(e)}")
+            raise
     return wrapper
+

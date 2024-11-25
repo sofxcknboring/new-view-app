@@ -1,4 +1,7 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any, Optional
+
+import asyncio
+
 from .snmp_logger import snmp_logger
 from core.config import settings
 from core.services.snmp.snmp_base import SnmpBase
@@ -24,7 +27,14 @@ class SnmpV2(SnmpBase):
         return await snmp_response_coroutine
 
     @snmp_logger
-    async def get_vlan_configuration(self, ip_address: str, snmp_oid="1.3.6.1.2.1.17.7.1.4.5.1.1"):
+    async def get_sys_descr(self, target_ip, current_oid="1.3.6.1.2.1.1.1"):
+        snmp_response = self.get_snmp_response(ip_address=target_ip, snmp_oid=current_oid)
+        formatter = self.format_class(*await snmp_response, start_oid=current_oid)
+        formatted_response = formatter.format_sys_descr()
+        return formatted_response
+
+    @snmp_logger
+    async def get_port_vlan_table(self, ip_address: str, snmp_oid="1.3.6.1.2.1.17.7.1.4.5.1.1"):
         current_oid = snmp_oid
         result = []
 
@@ -32,46 +42,47 @@ class SnmpV2(SnmpBase):
             snmp_response = self.get_snmp_response(ip_address=ip_address, snmp_oid=current_oid)
             formatter = self.format_class(*await snmp_response, start_oid=snmp_oid)
 
-            port, current_oid = formatter.format_info()
+            port, current_oid = formatter.format_port_vlan_table()
             if port:
                 result.append(port)
             else:
                 continue
         return result
 
-    async def walk_all(self, method_name: str) -> List:
-        pass
-        # method = getattr(self, method_name)
-        # tasks = [method(**switch) for switch in self.target_switches]
-        # results = await asyncio.gather(*tasks)
-        #
-        # combined_results = []
-        # for result in results:
-        #     combined_results.extend(result)
-        #
-        # return combined_results
+    @snmp_logger
+    async def get_mac_vlan_port_mappings(
+            self,
+            target_ip,
+            ports,
+            snmp_oid='1.3.6.1.2.1.17.7.1.2.2.1.2'
+    ) -> List[Dict[str, Any]]:
 
-    # async def get_switch_ports(
-    #     self, ip_address: str, snmp_oid: str, excluded_ports: Optional[List[int]]
-    # ) -> List[Dict[str, Any]]:
-    #     logger.info("Run SNMPv2 -> switch IP: %s (OID: %s)", ip_address, snmp_oid)
-    #     current_oid = snmp_oid
-    #     result = []
-    #
-    #     while current_oid.startswith(snmp_oid):
-    #         try:
-    #             snmp_response = self.get_snmp_response(ip_address=ip_address, snmp_oid=current_oid)
-    #
-    #             formatted_response = SwitchFormatter(*await snmp_response, start_oid=snmp_oid)
-    #
-    #             formatted_result, current_oid = formatted_response.get_vlan_mac_port(
-    #                 ip_address=ip_address, excluded_ports=excluded_ports
-    #             )
-    #             if formatted_result:
-    #                 result.append(formatted_result)
-    #             continue
-    #         except Exception as e:
-    #             logger.error("SnmpV2(method: get_switch_ports() -> IP: (%s) - Error: %s", ip_address, e)
-    #             break
-    #     logger.info("Completed for IP: %s", ip_address)
-    #     return result
+        current_oid = snmp_oid
+        result = []
+
+        while current_oid.startswith(snmp_oid):
+            snmp_response = self.get_snmp_response(ip_address=target_ip, snmp_oid=current_oid)
+
+            formatter = self.format_class(*await snmp_response, start_oid=snmp_oid)
+
+            formatted_result, current_oid = formatter.format_vlan_mac_port_mapping(
+                ip_address=target_ip, ports=ports
+            )
+            if formatted_result:
+                result.append(formatted_result)
+            continue
+        return result
+
+    async def get_arp_table(self, ip_address: str, snmp_oid: str):
+        pass
+
+    async def walk_all(self, method_name: str, target_switches) -> List:
+        method = getattr(self, method_name)
+        tasks = [method(**switch) for switch in target_switches]
+        results = await asyncio.gather(*tasks)
+
+        combined_results = []
+        for result in results:
+            combined_results.extend(result)
+
+        return combined_results
