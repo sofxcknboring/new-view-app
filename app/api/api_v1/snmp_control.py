@@ -24,7 +24,6 @@ async def update_snmp():
     """
     global last_run_time
 
-    # Проверка времени последнего выполнения
     if last_run_time and datetime.now() < last_run_time + lock_duration:
         raise HTTPException(status_code=429, detail="SNMP update is already in progress. Please try again later.")
 

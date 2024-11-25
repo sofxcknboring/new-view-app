@@ -4,10 +4,12 @@ __all__ = (
     "CoreSwitch",
     "Switch",
     "Device",
-    "ExcludedPort",
-    "SwitchExcludedPort",
+    "Port",
+    "SwitchPort",
+    "Location",
+    "Vlan"
 )
 
 from .base import Base
 from .db_helper import db_helper
-from .models import CoreSwitch, Device, ExcludedPort, Switch, SwitchExcludedPort
+from .models import CoreSwitch, Device, Port, Switch, SwitchPort, Location, Vlan

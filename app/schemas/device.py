@@ -4,6 +4,8 @@ from typing import List, Optional
 from fastapi import Query
 from pydantic import BaseModel, Field
 
+from schemas.vlan import VlanBase
+
 
 class DeviceBase(BaseModel):
     workplace_number: Optional[str] = Field(None, max_length=50)
@@ -51,6 +53,6 @@ class DeviceResponse(DeviceBase):
     ip_address: str
     mac: str
     port: int
-    vlan: int
+    vlan: VlanBase
     status: bool
     update_time: datetime

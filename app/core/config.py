@@ -22,6 +22,7 @@ class ApiV1Prefix(BaseModel):
     switches: str = "/switches"
     devices: str = "/devices"
     device_control: str = "/device_control"
+    locations: str = "/locations"
 
 
 class ApiPrefix(BaseModel):

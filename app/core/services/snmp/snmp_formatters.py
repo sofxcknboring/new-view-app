@@ -10,19 +10,38 @@ class SwitchFormatter(SnmpResultFormatter):
     def __init__(self, errorIndication: Any, errorStatus: Any, errorIndex: Any, varBinds: List[Tuple], start_oid: str):
         super().__init__(errorIndication, errorStatus, errorIndex, varBinds, start_oid)
 
-    def get_vlan_mac_port(self, ip_address, excluded_ports: Optional[List[int]]) -> Tuple[Dict, str]:
+    def format_sys_descr(self):
+        self.find_exceptions()
+
+        for var_bind in self.var_binds:
+            value = var_bind[1]
+            bytes_value = value.asOctets()
+            decoded_value = bytes_value.decode('utf-8', errors='ignore')
+            device_name = decoded_value.split(',')[:1]
+            return ",".join(device_name)
+
+    def format_port_vlan_table(self) -> Tuple[Optional[int], str]:
         """
-        Извлекает информацию о VLAN, MAC-адресах и портах для заданного IP-адреса коммутатора.
-
-        Args:
-            ip_address (str): IP-адрес коммутатора, для которого извлекается информация.
-            excluded_ports (Optional[List[int]]): Список портов, которые следует исключить из результатов.
-
         Returns:
-            Tuple[Dict, str]: Кортеж, содержащий словарь с информацией о VLAN, MAC-адресе и порте,
-                              а также текущий OID, если он был найден.
-
+            (port(int | None), current_oid: str)
         """
+        current_oid = None
+        self.find_exceptions()
+
+        for var_bind in self.var_binds:
+            vlan = int(var_bind[1].prettyPrint()) if var_bind else None
+
+            current_oid = str(var_bind[0])
+
+            if not current_oid.startswith(self.start_oid):
+                break
+            if vlan != 1:
+                return int(var_bind[0][-1]), current_oid
+            else:
+                return None, current_oid
+        return None, current_oid
+
+    def format_vlan_mac_port_mapping(self, ip_address, ports: Optional[List[int]]) -> Tuple[Dict, str]:
         current_oid = None
         formatted_result = None
 
@@ -30,12 +49,13 @@ class SwitchFormatter(SnmpResultFormatter):
 
         for var_bind in self.var_binds:
             port = validation_helper.validate_port(var_bind[1].prettyPrint() if var_bind else None)
+
             current_oid = str(var_bind[0])
 
             if not current_oid.startswith(self.start_oid):
                 break
 
-            if port in excluded_ports:
+            if port not in ports:
                 break
 
             dis_branched_oid = self.dis_branch_oid(current_oid)
@@ -48,31 +68,41 @@ class SwitchFormatter(SnmpResultFormatter):
             formatted_result = var_bind_data
         return formatted_result, current_oid
 
+    async def format_arp_table(self, ip_address):
+        pass
+
 
 class CoreSwitchFormatter(SnmpResultFormatter):
 
     def __init__(self, errorIndication: Any, errorStatus: Any, errorIndex: Any, varBinds: List[Tuple], start_oid: str):
         super().__init__(errorIndication, errorStatus, errorIndex, varBinds, start_oid)
 
-    def get_vlan_mac_ip(self, ip_address: str) -> Tuple[Dict, str]:
-        """
-        Извлекает информацию о VLAN, MAC-адресах и IP для заданного IP-адреса коммутатора.
+    def format_sys_descr(self):
+        self.find_exceptions()
 
-        Args:
-            ip_address (str): IP-адрес опорного коммутатора, для которого извлекается информация.
+        for var_bind in self.var_binds:
+            value = var_bind[1]
+            bytes_value = value.asOctets()
+            decoded_value = bytes_value.decode('utf-8', errors='ignore')
+            device_name = decoded_value.split(',')[:3]
+            return ",".join(device_name)
 
-        Returns:
-            Tuple[Dict, str]: Кортеж, содержащий словарь с информацией о VLAN, MAC-адресе и IP,
-                              а также текущий OID, если он был найден.
-        """
+    def format_port_vlan_table(self):
+        pass
+
+    def format_vlan_mac_port_mapping(self, ip_address, ports):
+        pass
+
+    def format_arp_table(self, ip_address: str) -> Tuple[Dict, str]:
         current_oid = None
         formatted_result = {ip_address: []}
 
         self.find_exceptions()
 
         for var_bind in self.var_binds:
-            mac = var_bind[1].prettyPrint() if var_bind else None
+            mac = var_bind[1].prettyPrint()
             current_oid = str(var_bind[0])
+
             if not current_oid.startswith(self.start_oid):
                 break
 
