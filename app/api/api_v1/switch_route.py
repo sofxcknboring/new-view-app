@@ -52,7 +52,7 @@ async def get_switches_configures(
             snmp_oid=switch["snmp_oid"],
             core_switch_ip=switch["core_switch_ip"],
             devices_count=switch["devices_count"],
-            excluded_ports=[ep.excluded_port.port_number for ep in switch["excluded_ports"]],
+            ports=[ep.port.port_number for ep in switch["ports"]],
             location_name=switch["location_name"],
         )
         switch_data.append(switch_info)

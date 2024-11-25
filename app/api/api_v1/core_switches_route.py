@@ -7,6 +7,7 @@ from core.models import CoreSwitch
 from core.services.crud.crud_core_sw import CrudCoreSwitch
 from core.services.crud.helpers import get_crud
 from fastapi import APIRouter, Depends, HTTPException
+
 from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchRead, CoreSwitchUpdate, CoreSwitchResponse, \
     CoreSwitchDelete
 
@@ -43,9 +44,7 @@ async def create_core_switch(
     ```json
     {
       "prefix": "Префикс Location,
-      "comment": "Комментарий",
-      "ip_address": "192.168.1.1",
-      "snmp_oid": "1.3.6.1.2.1.4.22.1.2"(по умолчанию)
+      "ip_address": "192.168.1.1"
     }
     ```
 

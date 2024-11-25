@@ -1,4 +1,4 @@
-from typing import List, Sequence
+from typing import List, Sequence, Dict
 
 from pydantic import ValidationError
 
@@ -18,7 +18,7 @@ dep_crud_device = get_crud(CrudDevice)
 @router.get("/", response_model=List[DeviceRead])
 async def get_devices(
     crud: CrudDevice = Depends(dep_crud_device), queries: DeviceQuery = Depends()
-) -> Sequence[Device]:
+) -> Sequence[DeviceRead]:
     """
     В разработке, возможны ошибки.\n
     Returns:\n
@@ -30,7 +30,19 @@ async def get_devices(
     """
     try:
         devices = await crud.read(queries)
-        return devices
+        return [
+            DeviceRead(
+                id=device.id,
+                port=device.port,
+                mac=device.mac,
+                vlan=device.vlan.vlan if device.vlan else None,
+                ip_address=device.ip_address,
+                status=device.status,
+                update_time=device.update_time,
+                switch_id=device.switch_id,
+            )
+            for device in devices
+        ]
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
