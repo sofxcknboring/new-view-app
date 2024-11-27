@@ -91,6 +91,12 @@ class WinRmConfig(BaseModel):
     password: str
 
 
+class SshConfig(BaseModel):
+
+    username: str
+    password: str
+
+
 class Setting(BaseSettings):
     """
     Основной класс настроек приложения, объединяющий все конфигурации.
@@ -113,6 +119,7 @@ class Setting(BaseSettings):
     run: RunConfig = RunConfig()
     api: ApiPrefix = ApiPrefix()
     winrm: WinRmConfig
+    ssh: SshConfig
     db: DataBaseConfig
     snmp: SnmpConfig
     api_key: str
