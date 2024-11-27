@@ -2,11 +2,11 @@ from core.config import settings
 from fastapi import APIRouter
 
 from .core_switches_route import router as core_switch_router
+from .device_control import router as device_control_router
 from .device_route import router as device_router
+from .location_route import router as location_router
 from .snmp_control import router as snmp_control_router
 from .switch_route import router as switch_router
-from .device_control import router as device_control_router
-from .location_route import router as location_router
 
 router = APIRouter(
     prefix=settings.api.v1.prefix,

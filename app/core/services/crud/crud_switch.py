@@ -1,13 +1,13 @@
-from typing import Dict, List, Sequence
+from typing import Dict, List
 
-from core.models import CoreSwitch, Port, Switch, SwitchPort, Location, Device
-from schemas.switch import SwitchCreate, SwitchUpdate, SwitchReadQuery
+from core.models import CoreSwitch, Device, Port, Switch, SwitchPort
+from schemas.switch import SwitchCreate, SwitchReadQuery, SwitchUpdate
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload, subqueryload
+from sqlalchemy.orm import selectinload
 
-from .crud_base import BaseCRUD
 from ..snmp import SnmpV2
 from ..snmp.snmp_formatters import SwitchFormatter
+from .crud_base import BaseCRUD
 
 
 class CrudSwitch(BaseCRUD):
@@ -51,9 +51,7 @@ class CrudSwitch(BaseCRUD):
 
             for port in switch_ports:
                 if port:
-                    db_port = await self.session.execute(
-                        select(Port).where(Port.port_number == int(port))
-                    )
+                    db_port = await self.session.execute(select(Port).where(Port.port_number == int(port)))
                     db_port = db_port.scalar_one_or_none()
                     if db_port is None:
                         db_port = Port(port_number=int(port))
@@ -103,10 +101,7 @@ class CrudSwitch(BaseCRUD):
         return list(switches_result)
 
     async def get_switches_configures(self) -> List[Dict]:
-        stmt = select(Switch).options(
-            selectinload(Switch.ports_relation),
-            selectinload(Switch.location)
-        )
+        stmt = select(Switch).options(selectinload(Switch.ports_relation), selectinload(Switch.location))
 
         switches = await self.session.execute(stmt)
         switches = switches.scalars().all()
@@ -173,4 +168,3 @@ class CrudSwitch(BaseCRUD):
         await self.session.delete(switch)
         await self.session.commit()
         return switch
-

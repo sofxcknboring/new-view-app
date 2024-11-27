@@ -19,7 +19,7 @@ async def update_snmp():
     Ручной запуск snmp обхода по коммутаторам которые определены в базе данных.\n
     Returns:\n
         200 -> SNMP data updated successfully - операция прошла успешно.
-        429 -> SNMP update is already in progress. Please try again later. - операция уже была выполнена ранее. Таймаут - 15 минут.
+        429 -> SNMP update is already in progress. Please try again later.Таймаут - 15 минут.
         500 -> Failed to update SNMP data. - в результате обхода произошла ошибка. Подробнее в "detail"
     """
     global last_run_time

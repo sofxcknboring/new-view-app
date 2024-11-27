@@ -1,9 +1,9 @@
 from typing import Sequence
 
 from core.models import CoreSwitch, Location
+from schemas.location import LocationBase, LocationUpdate
 from sqlalchemy import select
 
-from schemas.location import LocationBase, LocationDelete, LocationUpdate
 from .crud_base import BaseCRUD
 
 
@@ -68,6 +68,3 @@ class CrudLocation(BaseCRUD):
         await self.session.delete(location)
         await self.session.commit()
         return location
-
-
-

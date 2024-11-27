@@ -1,12 +1,11 @@
 from typing import List, Sequence
 
-from pydantic import ValidationError
-
+from core.models import Location
 from core.services.crud.crud_location import CrudLocation
 from core.services.crud.helpers import get_crud
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import ValidationError
 from schemas.location import LocationBase, LocationUpdate
-from core.models import Location
 
 router = APIRouter(tags=["Location"])
 
@@ -15,8 +14,7 @@ dep_crud_location = get_crud(CrudLocation)
 
 
 @router.get("/", response_model=List[LocationBase])
-async def get_locations(
-        crud: CrudLocation = Depends(dep_crud_location)) -> Sequence[Location]:
+async def get_locations(crud: CrudLocation = Depends(dep_crud_location)) -> Sequence[Location]:
     """
     В разработке, возможны ошибки.\n
     Returns:\n
@@ -64,7 +62,9 @@ async def update_location(
 
 
 @router.post("/create", response_model=LocationBase)
-async def create_location(location_create: LocationBase, crud: CrudLocation = Depends(dep_crud_location)) -> LocationBase:
+async def create_location(
+    location_create: LocationBase, crud: CrudLocation = Depends(dep_crud_location)
+) -> LocationBase:
     """
     Returns:\n
         200: SwitchResponse: OK -> Created Location
@@ -81,19 +81,15 @@ async def create_location(location_create: LocationBase, crud: CrudLocation = De
     except ValidationError as e:
         errors = []
         for error in e.errors():
-            field = error['loc']
-            message = error['msg']
-            errors.append({
-                "field": field,
-                "message": message
-            })
+            field = error["loc"]
+            message = error["msg"]
+            errors.append({"field": field, "message": message})
 
         raise HTTPException(status_code=422, detail=errors)
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 @router.post("/delete/{prefix}", response_model=LocationBase)

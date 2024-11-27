@@ -1,11 +1,8 @@
-import asyncio
-from typing import Dict
-
 from core.models import db_helper
 from core.services.crud.crud_core_sw import CrudCoreSwitch
 from core.services.crud.crud_device import CrudDevice
 from core.services.snmp import SnmpResponseMerger, SnmpV2, SnmpV3
-from core.services.snmp.snmp_formatters import SwitchFormatter, CoreSwitchFormatter
+from core.services.snmp.snmp_formatters import CoreSwitchFormatter, SwitchFormatter
 from schemas.device import DevicesSnmpResponse
 
 
@@ -37,4 +34,3 @@ async def add_snmp_to_data_base() -> bool:
             await devices.create(device_data_list)
 
         return True
-

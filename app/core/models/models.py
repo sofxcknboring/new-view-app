@@ -14,7 +14,7 @@ class Location(Base):
     name: Mapped[str] = mapped_column(unique=True, index=True)
     prefix: Mapped[str] = mapped_column(unique=True, index=True)
 
-    core_switches: Mapped[List["CoreSwitch"]] = relationship("CoreSwitch", back_populates="location", lazy='selectin')
+    core_switches: Mapped[List["CoreSwitch"]] = relationship("CoreSwitch", back_populates="location", lazy="selectin")
     switches: Mapped[List["Switch"]] = relationship("Switch", back_populates="location", lazy="selectin")
 
 
@@ -50,9 +50,7 @@ class Switch(Base):
     core_switch = relationship("CoreSwitch", back_populates="switches", lazy="selectin")
 
     devices: Mapped[List["Device"]] = relationship("Device", back_populates="switch", lazy="selectin")
-    ports_relation: Mapped[List["SwitchPort"]] = relationship(
-        "SwitchPort", back_populates="switch", lazy="selectin"
-    )
+    ports_relation: Mapped[List["SwitchPort"]] = relationship("SwitchPort", back_populates="switch", lazy="selectin")
 
 
 class Port(Base):
@@ -63,9 +61,7 @@ class Port(Base):
     port_number: Mapped[int] = mapped_column(unique=True)
     comment: Mapped[str] = mapped_column(nullable=True)
 
-    switches: Mapped[List["SwitchPort"]] = relationship(
-        "SwitchPort", back_populates="port", lazy="selectin"
-    )
+    switches: Mapped[List["SwitchPort"]] = relationship("SwitchPort", back_populates="port", lazy="selectin")
 
 
 class SwitchPort(Base):

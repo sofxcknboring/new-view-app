@@ -1,15 +1,12 @@
 from typing import List, Sequence
 
-
-from pydantic import ValidationError
-from sqlalchemy import exc
-
-
 from core.models import Switch
 from core.services.crud.crud_switch import CrudSwitch
 from core.services.crud.helpers import get_crud
 from fastapi import APIRouter, Depends, HTTPException
-from schemas.switch import SwitchCreate, SwitchResponse, SwitchUpdate, SwitchReadQuery, SwitchRead, SwitchConfRead
+from pydantic import ValidationError
+from schemas.switch import SwitchConfRead, SwitchCreate, SwitchReadQuery, SwitchResponse, SwitchUpdate
+from sqlalchemy import exc
 
 router = APIRouter(tags=["Switch"])
 
