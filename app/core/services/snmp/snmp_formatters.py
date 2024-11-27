@@ -16,8 +16,8 @@ class SwitchFormatter(SnmpResultFormatter):
         for var_bind in self.var_binds:
             value = var_bind[1]
             bytes_value = value.asOctets()
-            decoded_value = bytes_value.decode('utf-8', errors='ignore')
-            device_name = decoded_value.split(',')[:1]
+            decoded_value = bytes_value.decode("utf-8", errors="ignore")
+            device_name = decoded_value.split(",")[:1]
             return ",".join(device_name)
 
     def format_port_vlan_table(self) -> Tuple[Optional[int], str]:
@@ -83,8 +83,8 @@ class CoreSwitchFormatter(SnmpResultFormatter):
         for var_bind in self.var_binds:
             value = var_bind[1]
             bytes_value = value.asOctets()
-            decoded_value = bytes_value.decode('utf-8', errors='ignore')
-            device_name = decoded_value.split(',')[:3]
+            decoded_value = bytes_value.decode("utf-8", errors="ignore")
+            device_name = decoded_value.split(",")[:3]
             return ",".join(device_name)
 
     def format_port_vlan_table(self):

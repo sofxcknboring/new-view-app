@@ -3,12 +3,10 @@ import logging
 from typing import Any, Dict, List, Tuple
 
 from core.config import settings
-from core.services.snmp.snmp_logger import snmp_logger
 from core.services.snmp.formatter_base import SnmpResultFormatter
 from core.services.snmp.snmp_base import SnmpBase
-from core.services.snmp.snmp_formatters import CoreSwitchFormatter
+from core.services.snmp.snmp_logger import snmp_logger
 from pysnmp.hlapi.asyncio import *
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -20,11 +18,12 @@ class SnmpV3(SnmpBase):
     """
 
     def __init__(
-            self,
-            format_class: type[SnmpResultFormatter],
-            user: str = settings.snmp.username,
-            auth_proto: str = settings.snmp.auth_key,
-            priv_proto: str = settings.snmp.priv_key):
+        self,
+        format_class: type[SnmpResultFormatter],
+        user: str = settings.snmp.username,
+        auth_proto: str = settings.snmp.auth_key,
+        priv_proto: str = settings.snmp.priv_key,
+    ):
         super().__init__(format_class)
         self.user = UsmUserData(
             user, auth_proto, priv_proto, authProtocol=usmHMACSHAAuthProtocol, privProtocol=usmAesCfb128Protocol
@@ -44,7 +43,7 @@ class SnmpV3(SnmpBase):
         return await snmp_response_coroutine
 
     @snmp_logger
-    async def get_sys_descr(self, target_ip, current_oid='1.3.6.1.2.1.1.1'):
+    async def get_sys_descr(self, target_ip, current_oid="1.3.6.1.2.1.1.1"):
         snmp_response = self.get_snmp_response(ip_address=target_ip, snmp_oid=current_oid)
         formatter = self.format_class(*await snmp_response, start_oid=current_oid)
         formatted_response = formatter.format_sys_descr()

@@ -1,15 +1,13 @@
-from typing import Sequence, List
+from typing import List
 
-from pydantic import ValidationError
-from sqlalchemy.exc import IntegrityError
 
-from core.models import CoreSwitch
 from core.services.crud.crud_core_sw import CrudCoreSwitch
 from core.services.crud.helpers import get_crud
 from fastapi import APIRouter, Depends, HTTPException
-
-from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchRead, CoreSwitchUpdate, CoreSwitchResponse, \
-    CoreSwitchDelete
+from pydantic import ValidationError
+from schemas.core_switch import (CoreSwitchCreate, CoreSwitchDelete, CoreSwitchRead,
+                                 CoreSwitchResponse, CoreSwitchUpdate)
+from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(tags=["CoreSwitch"])
 

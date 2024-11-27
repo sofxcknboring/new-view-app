@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from pysnmp.hlapi.asyncio import *
 
 from core.services.snmp.formatter_base import SnmpResultFormatter
+from pysnmp.hlapi.asyncio import *
 
 
 class SnmpBase(ABC):

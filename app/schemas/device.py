@@ -3,7 +3,6 @@ from typing import List, Optional
 
 from fastapi import Query
 from pydantic import BaseModel, Field
-
 from schemas.vlan import VlanBase
 
 
@@ -38,6 +37,10 @@ class DeviceRead(DeviceBase):
     id: int
     port: int
     mac: str
+    nau_user: Optional[str]
+    domain_user: Optional[str]
+    remote_control: Optional[str]
+    pc_name: Optional[str]
     vlan: int
     ip_address: str
     status: bool
@@ -53,6 +56,17 @@ class DeviceResponse(DeviceBase):
     ip_address: str
     mac: str
     port: int
+    nau_user: Optional[str]
+    domain_user: Optional[str]
+    remote_control: Optional[str]
+    pc_name: Optional[str]
     vlan: VlanBase
     status: bool
     update_time: datetime
+
+
+class DeviceUpdateInfo(BaseModel):
+    nau_user: Optional[str]
+    domain_user: Optional[str]
+    remote_control: Optional[str]
+    pc_name: Optional[str]

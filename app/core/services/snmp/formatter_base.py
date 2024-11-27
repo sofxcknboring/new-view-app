@@ -6,7 +6,7 @@ from pysnmp.error import PySnmpError
 
 class SnmpResultFormatter(ABC):
     def __init__(
-            self, error_indication: Any, error_status: Any, error_index: Any, var_binds: List[Tuple], start_oid: str
+        self, error_indication: Any, error_status: Any, error_index: Any, var_binds: List[Tuple], start_oid: str
     ):
         self.error_indication = error_indication
         self.error_status = error_status

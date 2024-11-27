@@ -1,10 +1,10 @@
 from typing import List, Optional
 
+from fastapi import Query
 from pydantic import BaseModel, Field, field_validator
 
 from .device import DeviceResponse
 from .validation_helper import validation_helper
-from fastapi import Query
 
 
 class SwitchBase(BaseModel):
@@ -33,8 +33,9 @@ class SwitchCreate(SwitchBase):
 
 
 class SwitchUpdate(SwitchCreate):
-    snmp_oid: Optional[str] = Field('1.3.6.1.2.1.17.7.1.2.2.1.2')
+    snmp_oid: Optional[str] = Field("1.3.6.1.2.1.17.7.1.2.2.1.2")
     comment: Optional[str] = Field(None, max_length=100)
+
     @field_validator("snmp_oid")
     def validate_snmp_oid(cls, oid):
         if oid is None:

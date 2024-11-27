@@ -1,11 +1,11 @@
-from typing import List, Tuple, Dict, Any, Optional
-
 import asyncio
+from typing import Any, Dict, List, Tuple
 
-from .snmp_logger import snmp_logger
 from core.config import settings
 from core.services.snmp.snmp_base import SnmpBase
 from pysnmp.hlapi.asyncio import *
+
+from .snmp_logger import snmp_logger
 
 
 class SnmpV2(SnmpBase):
@@ -51,10 +51,7 @@ class SnmpV2(SnmpBase):
 
     @snmp_logger
     async def get_mac_vlan_port_mappings(
-            self,
-            target_ip,
-            ports,
-            snmp_oid='1.3.6.1.2.1.17.7.1.2.2.1.2'
+        self, target_ip, ports, snmp_oid="1.3.6.1.2.1.17.7.1.2.2.1.2"
     ) -> List[Dict[str, Any]]:
 
         current_oid = snmp_oid
@@ -65,9 +62,7 @@ class SnmpV2(SnmpBase):
 
             formatter = self.format_class(*await snmp_response, start_oid=snmp_oid)
 
-            formatted_result, current_oid = formatter.format_vlan_mac_port_mapping(
-                ip_address=target_ip, ports=ports
-            )
+            formatted_result, current_oid = formatter.format_vlan_mac_port_mapping(ip_address=target_ip, ports=ports)
             if formatted_result:
                 result.append(formatted_result)
             continue

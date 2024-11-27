@@ -10,6 +10,7 @@ class LocationBase(BaseModel):
     class Config:
         from_attributes = True
 
+
 class LocationUpdate(BaseModel):
     name: Optional[str] = Field(None)
     prefix: Optional[str] = Field(None)
@@ -17,9 +18,9 @@ class LocationUpdate(BaseModel):
     class Config:
         from_attributes = True
 
+
 class LocationDelete(BaseModel):
     name: str
 
     class Config:
         from_attributes = True
-

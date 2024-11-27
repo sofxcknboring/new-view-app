@@ -1,14 +1,13 @@
-from typing import Dict, List, Sequence
-
-from core.models import CoreSwitch, Switch, Location
-from schemas.core_switch import CoreSwitchBase, CoreSwitchCreate, CoreSwitchUpdate, CoreSwitchRead, CoreSwitchDelete
+from typing import Dict, List
+from core.models import CoreSwitch, Location, Switch
+from schemas.core_switch import CoreSwitchCreate, CoreSwitchDelete, CoreSwitchRead, CoreSwitchUpdate
+from schemas.switch import SwitchReadForCore
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from schemas.switch import SwitchReadForCore
-from .crud_base import BaseCRUD
 from ..snmp import SnmpV3
 from ..snmp.snmp_formatters import CoreSwitchFormatter
+from .crud_base import BaseCRUD
 
 
 class CrudCoreSwitch(BaseCRUD):
@@ -29,7 +28,9 @@ class CrudCoreSwitch(BaseCRUD):
             if not location:
                 raise ValueError("Location with this name does not exist.")
 
-            core_switch = CoreSwitch(**schema.model_dump(exclude={'prefix'}), location_id=location.id, comment=core_switch_name)
+            core_switch = CoreSwitch(
+                **schema.model_dump(exclude={"prefix"}), location_id=location.id, comment=core_switch_name
+            )
             self.session.add(core_switch)
             await self.session.commit()
             await self.session.refresh(core_switch)
@@ -53,12 +54,9 @@ class CrudCoreSwitch(BaseCRUD):
                 location_name=switch.location.name,
                 location_prefix=switch.location.prefix,
                 switches=[
-                   SwitchReadForCore(
-                       comment=s.comment,
-                       ip_address=s.ip_address,
-                       snmp_oid=s.snmp_oid
-                   ) for s in switch.switches
-                ]
+                    SwitchReadForCore(comment=s.comment, ip_address=s.ip_address, snmp_oid=s.snmp_oid)
+                    for s in switch.switches
+                ],
             )
             for switch in core_switches
         ]
@@ -76,12 +74,12 @@ class CrudCoreSwitch(BaseCRUD):
             raise ValueError(f"Device: {ip_address} not found")
 
         if schema.prefix and location is None:
-            raise ValueError(f'Location with prefix: {schema.prefix} not found')
+            raise ValueError(f"Location with prefix: {schema.prefix} not found")
 
         if location:
             core_switch.location_id = location.id
 
-        for attr, value in schema.model_dump(exclude_none=True, exclude={'prefix'}).items():
+        for attr, value in schema.model_dump(exclude_none=True, exclude={"prefix"}).items():
             setattr(core_switch, attr, value)
 
         await self.session.commit()
@@ -125,9 +123,7 @@ class CrudCoreSwitch(BaseCRUD):
                 switch_data = {
                     "target_ip": switch.ip_address,
                     "snmp_oid": switch.snmp_oid,
-                    "ports": [
-                        port.port.port_number for port in switch.ports_relation
-                    ],
+                    "ports": [port.port.port_number for port in switch.ports_relation],
                 }
                 core_data["switches"].append(switch_data)
             formatted_result.append(core_data)
