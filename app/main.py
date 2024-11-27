@@ -12,9 +12,7 @@ Net-View API. 🚀
 
 
 <details>
-<summary>🌈ChangeLog🌈 [1.0.0] - 15.11.2024</summary>
-
-<h1>🌟!important!🌟</h1>
+<summary>🌈ChangeLog🌈 [0.1.0] - 15.11.2024</summary>
 
 <h3>1. Обновлена структура базы данных</h3>
 
@@ -120,7 +118,7 @@ Net-View API. 🚀
 
 </details>
 <details>
-<summary>🌈ChangeLog🌈 [1.0.1] - 23.11.2024</summary>
+<summary>🌈ChangeLog🌈 [0.1.1] - 23.11.2024</summary>
 <h2>CoreSwitch</h2>
 <ul>
     <li><strong>/api/v1/core_switches/create</strong> - Проверяет доступность SNMP-агента. Если недоступен -> 500(snmp timeout)</li>
@@ -137,6 +135,29 @@ Net-View API. 🚀
     <li><strong>/api/v1/switches/create</strong> - Добавляет в поле "comment" название устройства. (<em>"comment"</em>)</li>
     <li><strong>/api/v1/switches/create</strong> - Не запрашивает oid.(<em>"snmp_oid"</em>)</li>
     <li><strong>/api/v1/switches/create</strong> - Не запрашивает порты.(<em>"ports"</em>)</li>
+</details>
+<details>
+<summary>🌈ChangeLog🌈 [0.1.2] - 27.11.2024</summary>
+<h2>Device Control</h2>
+<ul>
+    <li><strong>/api/v1/device_control/</strong> - return str undefined(заглушка)</li>
+</ul>
+
+<h2>Device</h2>
+<ul>
+    <li><strong>/api/v1/devices/update_device_info/{ip_address}</strong>
+     - Добавляет в бд данные по полям:<br>
+        nau_user - str (Активная УЗ Naumen, или "User not Found")<br>
+        domain_name - str (Активная УЗ AD)<br>
+        remote_control - str (RustDesk ID)<br>
+        pc_name - str (Windows - имя пк. Linux - Linux)<br></li>
+    <li><strong>/api/v1/devices/</strong> -> Возвращает доп.поля.</li>
+</ul>
+
+<h2>Switch</h2>
+<ul>
+    <li><strong>/api/v1/switches/devices</strong> -> Возвращает доп.поля.</li>
+</ul>
 </details>
 """
 
@@ -159,6 +180,7 @@ async def lifespan(app: FastAPI):
 
 
 main_app = FastAPI(
+    version='0.1.2',
     title="Net-View-API",
     description=description,
     lifespan=lifespan,
@@ -183,7 +205,7 @@ if __name__ == "__main__":
         "main:main_app",
         host=settings.run.host,
         port=settings.run.port,
-        reload=False,
-        workers=4,
-        log_config="log_conf.yaml"
+        reload=True,
+        # workers=4,
+        log_config="log_conf.yaml",
     )
