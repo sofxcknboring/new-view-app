@@ -1,11 +1,10 @@
 from datetime import datetime, timezone
-from typing import Sequence, Dict
-
-from sqlalchemy.orm import selectinload
+from typing import Sequence
 
 from core.models import Device, Switch, Vlan
-from schemas.device import DeviceUpdate, DeviceQuery, DevicesSnmpResponse
+from schemas.device import DeviceQuery, DevicesSnmpResponse, DeviceUpdate, DeviceUpdateInfo
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from .crud_base import BaseCRUD
 
@@ -100,6 +99,20 @@ class CrudDevice(BaseCRUD):
         for attr, value in schema.model_dump(exclude_none=True).items():
             if attr == "workplace_number" and value is not None:
                 value = f"{location_prefix}-{value}"
+            setattr(device, attr, value)
+
+        await self.session.commit()
+        return device
+
+    async def update_device_info(self, schema: DeviceUpdateInfo, ip_address=None):
+        stmt = select(Device).where(Device.ip_address == ip_address)
+        result = await self.session.execute(stmt)
+        device = result.scalar_one_or_none()
+
+        if device is None:
+            raise ValueError(f"Device {ip_address} not found")
+
+        for attr, value in schema.model_dump(exclude_none=True).items():
             setattr(device, attr, value)
 
         await self.session.commit()
