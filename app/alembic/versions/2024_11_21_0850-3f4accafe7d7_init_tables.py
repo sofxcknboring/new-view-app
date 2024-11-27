@@ -8,9 +8,8 @@ Create Date: 2024-11-21 08:50:17.375413
 
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "3f4accafe7d7"
@@ -28,12 +27,8 @@ def upgrade() -> None:
         sa.Column("prefix", sa.String(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(
-        op.f("ix_locations_name"), "locations", ["name"], unique=True
-    )
-    op.create_index(
-        op.f("ix_locations_prefix"), "locations", ["prefix"], unique=True
-    )
+    op.create_index(op.f("ix_locations_name"), "locations", ["name"], unique=True)
+    op.create_index(op.f("ix_locations_prefix"), "locations", ["prefix"], unique=True)
     op.create_table(
         "ports",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -93,9 +88,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(
-        op.f("ix_switches_ip_address"), "switches", ["ip_address"], unique=True
-    )
+    op.create_index(op.f("ix_switches_ip_address"), "switches", ["ip_address"], unique=True)
     op.create_table(
         "devices",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -146,9 +139,7 @@ def downgrade() -> None:
     op.drop_table("devices")
     op.drop_index(op.f("ix_switches_ip_address"), table_name="switches")
     op.drop_table("switches")
-    op.drop_index(
-        op.f("ix_core_switches_ip_address"), table_name="core_switches"
-    )
+    op.drop_index(op.f("ix_core_switches_ip_address"), table_name="core_switches")
     op.drop_index(op.f("ix_core_switches_comment"), table_name="core_switches")
     op.drop_table("core_switches")
     op.drop_table("vlans")
